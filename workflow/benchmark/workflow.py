@@ -54,6 +54,7 @@ class Workflow():
     def run(self):
         start = time.time()
 
+        result = None
         try:
             self.__lock_local_workspace()
             self.__generate_dockerpwd_file()
@@ -66,13 +67,6 @@ class Workflow():
             self.__start_providers()
             self.__start_consumer()
             self.__warmup_then_pressure()
-
-            result = {
-                'status': 0,
-                'is_valid': 1,
-                'message': 'Success',
-                'rank': self.best_qps
-            }
         except WorkflowError as err:
             result = {
                 'status': -err.error_code,
@@ -91,7 +85,15 @@ class Workflow():
             'Time used: %s',
             datetime.timedelta(seconds=(end - start)))
 
-        return result
+        if result is not None:
+            return result
+
+        return {
+            'status': 0,
+            'is_valid': 1,
+            'message': 'Success',
+            'rank': self.best_qps
+        }
 
     def __lock_local_workspace(self):
         self.logger.info('>>> Lock local workspace.')
