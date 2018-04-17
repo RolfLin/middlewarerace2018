@@ -70,7 +70,9 @@ class TaskAgent():
 
     def __send_request(self, url, payload):
         self.logger.debug('fetch task url = %s', url)
-        self.logger.debug('request data = %s', payload)
+        masked_payload = {**payload}
+        masked_payload['token'] = '******'
+        self.logger.debug('request data = %s', masked_payload)
 
         r = requests.post(url, json=payload, timeout=60)
         r.raise_for_status()
