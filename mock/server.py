@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import SocketServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
-class S(BaseHTTPRequestHandler):
+class Server(BaseHTTPRequestHandler):
     def _set_headers(self, content_type='text/html'):
         self.send_response(200)
         self.send_header('Content-Type', content_type)
@@ -15,34 +14,32 @@ class S(BaseHTTPRequestHandler):
 
     def do_GET(self):
         self._set_headers()
-        self.wfile.write('<html><body><h1>hi!</h1></body></html>')
+        self.wfile.write(bytes('<html><body><h1>hi!</h1></body></html>', 'utf-8'))
 
     def do_POST(self):
         self._set_headers(content_type='application/json')
-        self.wfile.write("""
+        self.wfile.write(bytes("""
             {
                 "errCode": 0,
                 "errName": null,
                 "errMsg": "success",
                 "wrapped": true,
                 "data": {
-                    "gitpath": "",
-                    "imagepath": "",
-                    "teamId": ,
-                    "teamCode": "",
-                    "imagerepouser": "",
-                    "userid": ,
-                    "imagerepopassword": "",
-                    "taskid":
+                    "teamId": 1000,
+                    "taskid": 2000,
+                    "gitpath": "https://code.aliyun.com/tangrui.cn/dubbo-tianchi-demo.git",
+                    "imagepath": "registry.cn-hangzhou.aliyuncs.com/tianchi4-docker/dubbo-tianchi-demo",
+                    "imagerepouser": "<username to login to image repo>",
+                    "imagerepopassword": "<password to login to image repo>"
                 }
             }
-        """)
+        """, 'utf-8'))
 
 
-def run(server_class=HTTPServer, handler_class=S, port=80):
+def run(server_class=HTTPServer, handler_class=Server, port=3000):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
-    print 'Starting httpd...'
+    print('Starting httpd...')
     httpd.serve_forever()
 
 
