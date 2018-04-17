@@ -19,3 +19,27 @@ $ brew install python
 ```bash
 $ brew install pipenv
 ```
+
+## 创建 Python 执行环境
+
+```bash
+$ cd ./workflow
+$ pipenv install
+```
+
+## 运行
+
+### 运行 Python 脚本
+
+```bash
+$ pipenv run python bootstrap.py -p <prefix>
+```
+
+### 运行 Shell 脚本
+
+需要本机安装 ossutil 和 wrk。
+
+```bash
+$ cd ./scripts
+$ sh bootstrap.sh <prefix>
+```
