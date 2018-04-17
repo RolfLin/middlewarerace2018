@@ -30,13 +30,13 @@ class Configuration():
     def task_fetch_url(self):
         tianchi_host = self.__get_value('Host', TIANCHI_SECTION)
         task_fetch_path = self.__get_value('TaskFetchPath', TIANCHI_SECTION)
-        return 'http://{}{}'.format(tianchi_host, task_fetch_path)
+        return '{}{}'.format(tianchi_host, task_fetch_path)
 
     @property
     def task_update_url(self):
         tianchi_host = self.__get_value('Host', TIANCHI_SECTION)
         task_update_path = self.__get_value('TaskUpdatePath', 'Tianchi')
-        return 'http://{}{}'.format(tianchi_host, task_update_path)
+        return '{}{}'.format(tianchi_host, task_update_path)
 
     @property
     def workspace_home(self):
