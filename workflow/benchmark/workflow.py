@@ -72,7 +72,10 @@ class Workflow():
                 'status': -err.error_code,
                 'is_valid': 1 if err.error_code in VALID_ERRORS else 0,
                 'message': err.message,
-                'rank': self.best_qps
+                'rank': self.best_qps,
+                'scoreJson': {
+                    'qps': self.best_qps
+                }
             }
             self.logger.exception('Failed to execute workflow.')
         finally:
@@ -92,7 +95,10 @@ class Workflow():
             'status': 0,
             'is_valid': 1,
             'message': 'Success',
-            'rank': self.best_qps
+            'rank': self.best_qps,
+            'scoreJson': {
+                'qps': self.best_qps
+            }
         }
 
     def __lock_local_workspace(self):
