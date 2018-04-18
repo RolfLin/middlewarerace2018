@@ -66,6 +66,7 @@ class TaskAgent():
         payload['isvalid'] = data.get('is_valid')
         payload['message'] = data.get('message')
         payload['rank'] = data.get('rank')
+        payload['scoreJson'] = data.get('scoreJson')
         return payload
 
     def __send_request(self, url, payload):
