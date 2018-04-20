@@ -41,4 +41,5 @@ class RemoteHost():
         self.dockerpwd_file = '{}/{}'.format(self.task_home, '.dockerpwd')
 
     def __repr__(self):
-        return super().__repr__()
+        s = ', '.join(['{}={}'.format(k, v) for k, v in self.__dict__.items()])
+        return '{}({})'.format(self.__class__.__name__, s)
