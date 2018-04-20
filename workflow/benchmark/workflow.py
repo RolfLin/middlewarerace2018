@@ -43,7 +43,7 @@ class Workflow():
         self.logger = getLogger(__name__)
         self.workspace = Workspace(self.config, self.task)
         self.qps_pattern = re.compile(
-            '^Requests/sec:\s*(\d*\.\d*)', re.M | re.I)
+            '^QPS:\s*(\d*\.\d*)', re.M | re.I)
         self.qps_results = {}
         self.best_qps = -1
         self.best_scale = -1
@@ -412,6 +412,7 @@ class Workflow():
         template = """
             sleep {sleep}
             wrk -t{threads} -c{connections} -d{duration} -T{timeout} \
+                --script=./benchmark/wrk.lua \
                 --latency http://{hostname}:{port}/invoke
             exit 0
         """.rstrip()
