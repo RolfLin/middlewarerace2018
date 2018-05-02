@@ -1,8 +1,8 @@
-# 第四界天池中间件性能挑战赛跑分程序
+# 第四界阿里中间件性能挑战赛评测环境搭建指南
 
 ## 一、前期准备
 
-运行此跑分程序，需要准备两台虚拟机，一台用作施压机，一台用作被压机。假设施压机的 hostname 为 `master.tianchi`，则被压机的域名需要是 `<prefix>.master.tianchi`。然后修改 hosts 文件使得从施压机可以通过域名访问被压机。同时需要生成一组密钥对，使得可以从施压机以免密码的形式 `ssh` 到被压机。
+搭建此评测环境，需要准备两台主机，一台用作施压机，另一台用作被压机。假设施压机的主机名为 `g1.tianchi001.test`，然后修改 `/etc/hosts` 文件将被压机可访问的域名修改为 `<prefix>.g1.tianchi001.test`，`prefix` 是任何合法的域名前缀。另外需要生成一组密钥对，使得可以从施压机以免密码的形式 `ssh` 到被压机。
 
 ### 1.1、准备施压机（以 mscOS 为例）
 
@@ -29,7 +29,7 @@ $ brew install pipenv
 #### 1.1.4、克隆本代码仓库
 
 ```bash
-$ git clone http://gitlab.alibaba-inc.com/albert.tr/tianchi4-benchmarker.git ~/benchmarker
+$ git clone https://code.aliyun.com/middlewarerace2018/benchmarker.git ~/benchmarker
 ```
 
 #### 1.1.5、创建 Python 运行环境
@@ -60,9 +60,19 @@ $ brew install wrk
 
 **注：密码后面需要跟随一个回车换行，详细说明请参考 `man sudo`。**
 
-### 1.3、修改 mock server
+### 1.3、修改 Mock Server
 
 打开 `~/benchmarker/mock/server.py` 修改 `do_POST` 方法中返回的数据，主要关注 `data` 字段，根据实际情况修改即可。
+
+| 字段名 | 说明 |
+| ----- | ---- |
+| teamId | 团队 ID，该字段在测试环境可以为任意数字 |
+| taskid | 任务 ID，该字段在测试环境可以为任意数字 |
+| gitpath | 项目源代码的 git 仓库地址，评测时不使用该字段，仅在代码评审的时候使用 |
+| imagepath | Docker 镜像地址，注意填写外网可访问的地址，且无需添加版本号 |
+| imagerepouser | 登录 Docker 镜像仓库的用户名 |
+| imagerepopassword | 登录 Docker 镜像仓库的密码 |
+
 
 ### 1.4、修改配置文件
 
