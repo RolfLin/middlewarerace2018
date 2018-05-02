@@ -104,14 +104,19 @@ class Workflow():
     def __lock_local_workspace(self):
         self.logger.info('>>> Lock local workspace.')
 
-        path = Path(self.workspace.local.lock_file)
-        if path.exists():
+        local = self.workspace.local
+
+        path = Path(local.home)
+        if not path.exists():
+            path.mkdir(parents=True)
+
+        path = Path(local.lock_file)
+        try:
+            path.touch(exist_ok=False)
+        except FileExistsError as err:
             raise WorkflowError(
                 'Failed to lock local workspace due to lock file exists.',
-                error_code=FAILED_TO_LOCK_LOCAL_WORKSPACE)
-
-        try:
-            path.touch()
+                error_code=FAILED_TO_LOCK_LOCAL_WORKSPACE) from err
         except Exception as err:
             raise WorkflowError(
                 'Failed to lock local workspace.',
