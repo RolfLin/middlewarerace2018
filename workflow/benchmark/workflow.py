@@ -475,9 +475,11 @@ class Workflow():
         self.logger.info('>>> Stop consumer service.')
 
         script = """
+            # noqa: E501
             CID_FILE={ws.task_home}/consumer/run.cid
             CID=$(cat $CID_FILE)
             cat ~/.passwd | sudo -S -p '' docker stop $CID
+            cat ~/.passwd | sudo -S -p '' docker logs $CID > {ws.task_home}/consumer/logs/docker.log
             cat ~/.passwd | sudo -S -p '' docker rm $CID
             rm -f $CID_FILE
             exit 0
@@ -491,9 +493,11 @@ class Workflow():
         self.logger.info('>>> Stop provider services.')
 
         template = """
+            # noqa: E501
             CID_FILE={ws.task_home}/provider-{scale}/run.cid
             CID=$(cat $CID_FILE)
             cat ~/.passwd | sudo -S -p '' docker stop $CID
+            cat ~/.passwd | sudo -S -p '' docker logs $CID > {ws.task_home}/provider-{scale}/logs/docker.log
             cat ~/.passwd | sudo -S -p '' docker rm $CID
             rm -f $CID_FILE
         """.rstrip()
