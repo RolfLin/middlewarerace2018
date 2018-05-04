@@ -254,9 +254,6 @@ class Workflow():
             echo {consumer_app_sha256} > /tmp/consumer.sha256
             echo {provider_app_sha256} > /tmp/provider.sha256
             echo {entrypoint_script_sha256} > /tmp/entrypoint.sha256
-            cat /tmp/consumer.sha256
-            cat /tmp/provider.sha256
-            cat /tmp/entrypoint.sha256
 
             cat ~/.passwd | sudo -S -p '' docker run -d --entrypoint="" --cidfile=/tmp/run.cid {image_path} sleep 1m
             CID=$(cat /tmp/run.cid)
