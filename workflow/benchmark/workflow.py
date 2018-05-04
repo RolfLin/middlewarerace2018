@@ -21,6 +21,9 @@ FAILED_TO_LOCK_REMOTE_TASK_HOME = 1040
 FAILED_TO_UPLOAD_DOCKER_PASSWORD_FILE = 1050
 FAILED_TO_LOGIN_TO_DOCKER_REPOSITORY = 1060
 FAILED_TO_PULL_DOCKER_IMAGE = 1070
+FAILED_TO_CHECK_CONSUMER_APP_SIGNATURE = 1071
+FAILED_TO_CHECK_PROVIDER_APP_SIGNATURE = 1072
+FAILED_TO_CHECK_ENTRYPOINT_SCRIPT_SIGNATURE = 1073
 FAILED_TO_START_ETCD_SERVICE = 1080
 FAILED_TO_START_PROVIDER_SERVICES = 1090
 FAILED_TO_START_CONSUMER_SERVICE = 1100
@@ -30,6 +33,9 @@ FAILED_TO_PRESSURE_APPLICATIONS = 1120
 VALID_ERRORS = [
     FAILED_TO_LOGIN_TO_DOCKER_REPOSITORY,
     FAILED_TO_PULL_DOCKER_IMAGE,
+    FAILED_TO_CHECK_CONSUMER_APP_SIGNATURE,
+    FAILED_TO_CHECK_PROVIDER_APP_SIGNATURE,
+    FAILED_TO_CHECK_ENTRYPOINT_SCRIPT_SIGNATURE,
     FAILED_TO_START_PROVIDER_SERVICES,
     FAILED_TO_START_CONSUMER_SERVICE
 ]
@@ -63,6 +69,7 @@ class Workflow():
             self.__upload_dockerpwd_file()
             self.__docker_login()
             self.__pull_docker_image()
+            self.__check_signatures()
             self.__start_etcd()
             self.__start_providers()
             self.__start_consumer()
@@ -234,6 +241,40 @@ class Workflow():
             raise WorkflowError(
                 'Failed to pull Docker image.',
                 error_code=FAILED_TO_PULL_DOCKER_IMAGE)
+
+    def __check_signatures(self):
+        self.logger.info('>>> Check signatures.')
+
+        script = """
+            # noqa: E501
+            cat ~/.passwd | sudo -S -p '' docker run -i --rm --entrypoint="" {image_path} sha256sum -c < <(echo {consumer_app_sha256})
+            [[ $? -ne 0 ]] && exit 101
+            cat ~/.passwd | sudo -S -p '' docker run -i --rm --entrypoint="" {image_path} sha256sum -c < <(echo {provider_app_sha256})
+            [[ $? -ne 0 ]] && exit 102
+            cat ~/.passwd | sudo -S -p '' docker run -i --rm --entrypoint="" {image_path} sha256sum -c < <(echo {entrypoint_script_sha256})
+            [[ $? -ne 0 ]] && exit 103
+            exit 0
+        """.format(
+            image_path=self.task.image_path,
+            consumer_app_sha256=self.config.consumer_app_sha256,
+            provider_app_sha256=self.config.provider_app_sha256,
+            entrypoint_script_sha256=self.config.entrypoint_script_sha256)
+
+        returncode, outs, _ = self.__run_remote_script(script)
+        if returncode == 0:
+            return
+        if returncode == 101:
+            raise WorkflowError(
+                'Failed to check consumer app signature.',
+                error_code=FAILED_TO_CHECK_CONSUMER_APP_SIGNATURE)
+        if returncode == 102:
+            raise WorkflowError(
+                'Failed to check provider app signature.',
+                error_code=FAILED_TO_CHECK_PROVIDER_APP_SIGNATURE)
+        if returncode == 103:
+            raise WorkflowError(
+                'Failed to check entrypoint script signature.',
+                error_code=FAILED_TO_CHECK_ENTRYPOINT_SCRIPT_SIGNATURE)
 
     def __start_etcd(self):
         self.logger.info('>>> Start etcd service.')

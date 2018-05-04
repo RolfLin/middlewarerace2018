@@ -19,6 +19,18 @@ class Configuration():
         return self.config[section][key]
 
     @property
+    def consumer_app_sha256(self):
+        return self.__get_value('ConsumerAppSha256')
+
+    @property
+    def provider_app_sha256(self):
+        return self.__get_value('ProviderAppSha256')
+
+    @property
+    def entrypoint_script_sha256(self):
+        return self.__get_value('EntrypointScriptSha256')
+
+    @property
     def access_token(self):
         return self.__get_value('Token', TIANCHI_SECTION)
 
