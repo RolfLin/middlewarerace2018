@@ -68,10 +68,10 @@ $ brew install wrk
 | ----- | ---- |
 | teamId | 团队 ID，该字段在测试环境可以为任意数字 |
 | taskid | 任务 ID，该字段在测试环境可以为任意数字 |
-| gitpath | 项目源代码的 git 仓库地址，评测时不使用该字段，仅在代码评审的时候使用 |
-| imagepath | Docker 镜像地址，注意填写外网可访问的地址，且无需添加版本号 |
-| imagerepouser | 登录 Docker 镜像仓库的用户名 |
-| imagerepopassword | 登录 Docker 镜像仓库的密码 |
+| gitpath | 项目源代码的 git 仓库地址，评测时不使用该字段，仅在代码评审的时候使用。代码仓库请使用阿里云提供的服务 http://code.aliyun.com |
+| imagepath | Docker 镜像地址，注意填写外网地址，且无需添加版本号。镜像仓库请使用阿里云提供的服务 http://cr.console.aliyun.com |
+| imagerepouser | 登录 Docker 镜像仓库的用户名，该用户名就是登录阿里云的用户名 |
+| imagerepopassword | 登录 Docker 镜像仓库的密码，镜像仓库的密码是在镜像仓库服务中设置的密码，不同于登录阿里云的密码 |
 
 
 ### 1.4、修改配置文件
