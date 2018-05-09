@@ -14,7 +14,8 @@ class Server(BaseHTTPRequestHandler):
 
     def do_GET(self):
         self._set_headers()
-        self.wfile.write(bytes('<html><body><h1>hi!</h1></body></html>', 'utf-8'))
+        self.wfile.write(
+            bytes('<html><body><h1>hi!</h1></body></html>', 'utf-8'))
 
     def do_POST(self):
         self._set_headers(content_type='application/json')
@@ -27,8 +28,8 @@ class Server(BaseHTTPRequestHandler):
                 "data": {
                     "teamId": 1000,
                     "taskid": 2000,
-                    "gitpath": "https://code.aliyun.com/tangrui.cn/dubbo-tianchi-demo.git",
-                    "imagepath": "registry.cn-hangzhou.aliyuncs.com/tianchi4-docker/dubbo-tianchi-demo",
+                    "gitpath": "https://code.aliyun.com/middlewarerace2018/agent-demo.git",
+                    "imagepath": "registry.cn-hangzhou.aliyuncs.com/aliware2018/agent-demo",
                     "imagerepouser": "<username to login to image repo>",
                     "imagerepopassword": "<password to login to image repo>"
                 }
