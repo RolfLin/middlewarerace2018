@@ -14,6 +14,10 @@ from benchmark.model.workspace import Workspace
 
 LOGS_FILE_NAME = 'logs.tar.gz'
 
+BENCHMARKER_NETWORK_NAME = 'benchmarker'
+BENCHMARKER_NETWORK_SUBNET = '10.10.10.0/24'
+BENCHMARKER_NETWORK_GATEWAY = '10.10.10.1'
+
 FAILED_TO_LOCK_LOCAL_WORKSPACE = 1010
 FAILED_TO_GENERATE_DOCKER_PASSWORD_FILE = 1020
 FAILED_TO_CREATE_REMOTE_TASK_HOME = 1030
@@ -24,6 +28,7 @@ FAILED_TO_PULL_DOCKER_IMAGE = 1070
 FAILED_TO_CHECK_CONSUMER_APP_SIGNATURE = 1071
 FAILED_TO_CHECK_PROVIDER_APP_SIGNATURE = 1072
 FAILED_TO_CHECK_ENTRYPOINT_SCRIPT_SIGNATURE = 1073
+FAILED_TO_CREATE_DOCKER_NETWORK = 1074
 FAILED_TO_START_ETCD_SERVICE = 1080
 FAILED_TO_START_PROVIDER_SERVICES = 1090
 FAILED_TO_START_CONSUMER_SERVICE = 1100
@@ -70,6 +75,7 @@ class Workflow():
             self.__docker_login()
             self.__pull_docker_image()
             self.__check_signatures()
+            self.__create_docker_network()
             self.__start_etcd()
             self.__start_providers()
             self.__start_consumer()
@@ -292,6 +298,32 @@ class Workflow():
             raise WorkflowError(
                 'Failed to check entrypoint script signature.',
                 error_code=FAILED_TO_CHECK_ENTRYPOINT_SCRIPT_SIGNATURE)
+
+    def __create_docker_network(self):
+        self.logger.info('>>> Create Docker network.')
+
+        script = """
+            # noqa: E501
+            CID=$(cat ~/.passwd | sudo -S -p '' docker network ls --filter name={name} -q)
+            if [[ "$CID" != "" ]]; then
+                echo "[WARN] Network named '{name}' already exists, skip creating."
+                exit 0
+            fi
+            cat ~/.passwd | sudo -S -p '' docker network create \
+                --driver=bridge \
+                --subnet={subnet} \
+                --gateway={gateway} \
+                {name}
+        """.format(
+            subnet=BENCHMARKER_NETWORK_SUBNET,
+            gateway=BENCHMARKER_NETWORK_GATEWAY,
+            name=BENCHMARKER_NETWORK_NAME).rstrip()
+
+        returncode, outs, _ = self.__run_remote_script(script)
+        if returncode != 0:
+            raise WorkflowError(
+                'Failed to create Docker network [{}]'.format(BENCHMARKER_NETWORK_NAME),  # noqa: E501
+                FAILED_TO_CREATE_DOCKER_NETWORK)
 
     def __start_etcd(self):
         self.logger.info('>>> Start etcd service.')
