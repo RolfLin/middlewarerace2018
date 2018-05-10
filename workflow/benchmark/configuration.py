@@ -115,6 +115,14 @@ class Configuration():
         return self.__get_value('CpuPeriod', DOCKER_SECTION)
 
     @property
+    def etcd_cpu_quota(self):
+        return self.__get_value('EtcdCpuQuota', DOCKER_SECTION)
+
+    @property
+    def etcd_memory(self):
+        return self.__get_value('EtcdMemory', DOCKER_SECTION)
+
+    @property
     def small_provider_cpu_quota(self):
         return self.__get_value('SmallProviderCpuQuota', DOCKER_SECTION)
 

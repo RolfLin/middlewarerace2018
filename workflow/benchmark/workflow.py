@@ -333,38 +333,42 @@ class Workflow():
         script = """
             # noqa: E501
 
-            ETCD_HOME={ws.task_home}/etcd
-            IP_ADDR=$(ip addr show docker0 | grep 'inet\\b' | awk '{{print $2}}' | cut -d '/' -f 1)
-            PORT={port}
-            CLIENT_URL=http://$IP_ADDR:$PORT
-
+            ETCD_HOME={task_home}/etcd
             rm -rf $ETCD_HOME
             mkdir -p $ETCD_HOME
-            nohup /opt/etcd/etcd \
-                  --listen-client-urls $CLIENT_URL \
-                  --advertise-client-urls $CLIENT_URL \
-                  --data-dir $ETCD_HOME/data > $ETCD_HOME/etcd.log 2>&1 &
-            echo $! > $ETCD_HOME/run.pid
+            cat ~/.passwd | sudo -S -p '' docker run -d \
+                --name etcd \
+                --cidfile $ETCD_HOME/run.cid \
+                --cpu-period {period} \
+                --cpu-quota {quota} \
+                -m {memory} \
+                --network {network} \
+                -v {ws.task_home}/etcd/logs:/root/logs \
+                {image_path}
 
-            ATTEMPTS=0
-            MAX_ATTEMPTS=10
-            while true; do
-                echo "Trying to connect $IP_ADDR:$PORT..."
-                nc -v -n -w 1 --send-only $IP_ADDR $PORT < /dev/null
-                if [[ $? -eq 0 ]]; then
-                    exit 0
-                fi
-                if [[ $ATTEMPTS -eq $MAX_ATTEMPTS ]]; then
-                    echo "Cannot connect to port $PORT after $ATTEMPTS attempts."
-                    exit 1
-                fi
-                ATTEMPTS=$((ATTEMPTS+1))
-                echo "Waiting for 5 seconds... ($ATTEMPTS/$MAX_ATTEMPTS)"
-                sleep 5
-            done
+            #ATTEMPTS=0
+            #MAX_ATTEMPTS=10
+            #while true; do
+            #    echo "Trying to connect $IP_ADDR:$PORT..."
+            #    nc -v -n -w 1 --send-only $IP_ADDR $PORT < /dev/null
+            #    if [[ $? -eq 0 ]]; then
+            #        exit 0
+            #    fi
+            #    if [[ $ATTEMPTS -eq $MAX_ATTEMPTS ]]; then
+            #        echo "Cannot connect to port $PORT after $ATTEMPTS attempts."
+            #        exit 1
+            #    fi
+            #    ATTEMPTS=$((ATTEMPTS+1))
+            #    echo "Waiting for 5 seconds... ($ATTEMPTS/$MAX_ATTEMPTS)"
+            #    sleep 5
+            #done
         """.format(
-            ws=self.workspace.remote,
-            port=self.config.etcd_port).rstrip()
+            task_home=self.workspace.remote.task_home,
+            period=self.config.cpu_period,
+            quota=self.config.etcd_cpu_quota,
+            memory=self.config.etcd_memory,
+            network=BENCHMARKER_NETWORK_NAME,
+            image_path=ETCD_IMAGE_PATH).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
