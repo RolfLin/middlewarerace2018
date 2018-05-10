@@ -343,8 +343,10 @@ class Workflow():
                 --cpu-quota {quota} \
                 -m {memory} \
                 --network {network} \
-                -v {ws.task_home}/etcd/logs:/root/logs \
+                -v {task_home}/etcd/logs:/root/logs \
                 {image_path}
+
+
 
             #ATTEMPTS=0
             #MAX_ATTEMPTS=10
