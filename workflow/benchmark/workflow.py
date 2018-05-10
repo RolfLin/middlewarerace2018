@@ -391,77 +391,90 @@ class Workflow():
         self.logger.info('>>> Start provider services.')
 
         template = """
-            cd {ws.task_home}
-            if [[ -d provider-{scale} ]]; then
-                rm -rf provider-{scale}
-            fi
-            mkdir -p provider-{scale}/logs
-            cd provider-{scale}
+            PROVIDER_HOME={task_home}/provider-{scale}
+            rm -rf $PROVIDER_HOME
+            mkdir -p $PROVIDER_HOME/logs
             cat ~/.passwd | sudo -S -p '' docker run -d \
                 --name provider-{scale} \
-                --cidfile run.cid \
+                --cidfile $PROVIDER_HOME/run.cid \
                 --cpu-period {period} \
                 --cpu-quota {quota} \
                 -m {memory} \
-                --network host \
-                -v {ws.task_home}/provider-{scale}/logs:/root/logs \
-                {task.image_path} provider-{scale}
+                --network {network} \
+                -v $PROVIDER_HOME/logs:/root/logs \
+                {image_path} provider-{scale}
         """.rstrip()
         remote = self.workspace.remote
         task = self.task
         script = ''
         script += template.format(
-            ws=remote,
+            task_home=remote.task_home,
             scale='small',
             period=self.config.cpu_period,
             quota=self.config.small_provider_cpu_quota,
             memory=self.config.small_provider_memory,
-            task=task)
+            network=BENCHMARKER_NETWORK_NAME,
+            image_path=task.image_path)
         script += template.format(
-            ws=remote,
+            task_home=remote.task_home,
             scale='medium',
             period=self.config.cpu_period,
             quota=self.config.medium_provider_cpu_quota,
             memory=self.config.medium_provider_memory,
-            task=task)
+            network=BENCHMARKER_NETWORK_NAME,
+            image_path=task.image_path)
         script += template.format(
-            ws=remote,
+            task_home=remote.task_home,
             scale='large',
             period=self.config.cpu_period,
             quota=self.config.large_provider_cpu_quota,
             memory=self.config.large_provider_memory,
-            task=task)
+            network=BENCHMARKER_NETWORK_NAME,
+            image_path=task.image_path)
         script += """
             # noqa: E501
 
+            PROVIDER_PORT=20889
             ATTEMPTS=0
-            MAX_ATTEMPTS=10
+            MAX_ATTEMPTS={max_attempts}
             while true; do
-                echo "Trying to connect 127.0.0.1:{port1}..."
-                nc -v -n -w 1 --send-only 127.0.0.1 {port1} < /dev/null; r1=$?
+                echo "Trying to connect provider-small..."
+                cat ~/.passwd | sudo -S -p '' docker run --network {network} \
+                    {ncat_image_path} \
+                    ncat -v -w 1 --send-only provider-small $PROVIDER_PORT < /dev/null; r1=$?
+                c1=$([[ $r1 -eq 0]] && { echo success; } || { echo failed; })
 
-                echo "Trying to connect 127.0.0.1:{port2}..."
-                nc -v -n -w 1 --send-only 127.0.0.1 {port2} < /dev/null; r2=$?
+                echo "Trying to connect provider-medium..."
+                cat ~/.passwd | sudo -S -p '' docker run --network {network} \
+                    {ncat_image_path} \
+                    ncat -v -w 1 --send-only provider-medium $PROVIDER_PORT < /dev/null; r1=$?
+                c2=$([[ $r2 -eq 0]] && { echo success; } || { echo failed; })
 
-                echo "Trying to connect 127.0.0.1:{port3}..."
-                nc -v -n -w 1 --send-only 127.0.0.1 {port3} < /dev/null; r3=$?
+                echo "Trying to connect provider-large..."
+                cat ~/.passwd | sudo -S -p '' docker run --network {network} \
+                    {ncat_image_path} \
+                    ncat -v -w 1 --send-only provider-large $PROVIDER_PORT < /dev/null; r1=$?
+                c3=$([[ $r3 -eq 0]] && { echo success; } || { echo failed; })
 
-                echo $r1, $r2, $r3
+                echo "provider-small connect $c1"
+                echo "provider-medium connect $c2"
+                echo "provider-large connect $c3"
                 if [[ $r1 -eq 0 && $r2 -eq 0 && $r3 -eq 0 ]]; then
                     exit 0
                 fi
                 if [[ $ATTEMPTS -eq $MAX_ATTEMPTS ]]; then
-                    echo "Cannot connect to some of the ports {port1}, {port2}, {port3} after $ATTEMPTS attempts."
+                    echo "Cannot connect to some of the providers after $ATTEMPTS attempts."
                     exit 1
                 fi
                 ATTEMPTS=$((ATTEMPTS+1))
-                echo "Waiting for 5 seconds... ($ATTEMPTS/$MAX_ATTEMPTS)"
-                sleep 5
+                echo "Waiting for {sleep} seconds... ($ATTEMPTS/$MAX_ATTEMPTS)"
+                sleep {sleep}
             done
         """.format(
-            port1=self.config.small_provider_port,
-            port2=self.config.medium_provider_port,
-            port3=self.config.large_provider_port).rstrip()
+            max_attempts=self.config.max_attempts,
+            network=BENCHMARKER_NETWORK_NAME,
+            ncat_image_path=NCAT_IMAGE_PATH,
+            sleep=self.config.sleep_interval).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
