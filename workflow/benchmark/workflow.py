@@ -442,19 +442,19 @@ class Workflow():
                 cat ~/.passwd | sudo -S -p '' docker run --network {network} \
                     {ncat_image_path} \
                     ncat -v -w 1 --send-only provider-small $PROVIDER_PORT < /dev/null; r1=$?
-                c1=$([[ $r1 -eq 0]] && { echo success; } || { echo failed; })
+                c1=$([[ $r1 -eq 0]] && \{ echo success; \} || \{ echo failed; \})
 
                 echo "Trying to connect provider-medium..."
                 cat ~/.passwd | sudo -S -p '' docker run --network {network} \
                     {ncat_image_path} \
                     ncat -v -w 1 --send-only provider-medium $PROVIDER_PORT < /dev/null; r1=$?
-                c2=$([[ $r2 -eq 0]] && { echo success; } || { echo failed; })
+                c2=$([[ $r2 -eq 0]] && \{ echo success; \} || \{ echo failed; \})
 
                 echo "Trying to connect provider-large..."
                 cat ~/.passwd | sudo -S -p '' docker run --network {network} \
                     {ncat_image_path} \
                     ncat -v -w 1 --send-only provider-large $PROVIDER_PORT < /dev/null; r1=$?
-                c3=$([[ $r3 -eq 0]] && { echo success; } || { echo failed; })
+                c3=$([[ $r3 -eq 0]] && \{ echo success; \} || \{ echo failed; \})
 
                 echo "provider-small connect $c1"
                 echo "provider-medium connect $c2"
