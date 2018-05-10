@@ -15,6 +15,7 @@ from benchmark.model.workspace import Workspace
 LOGS_FILE_NAME = 'logs.tar.gz'
 
 ETCD_IMAGE_PATH = 'registry.cn-hangzhou.aliyuncs.com/aliware2018/alpine-etcd'
+NCAT_IMAGE_PATH = 'registry.cn-hangzhou.aliyuncs.com/aliware2018/alpine-nmap-ncat'  # noqa: E501
 
 BENCHMARKER_NETWORK_NAME = 'benchmarker'
 BENCHMARKER_NETWORK_SUBNET = '10.10.10.0/24'
@@ -242,7 +243,11 @@ class Workflow():
         script = """
             cat ~/.passwd | sudo -S -p '' docker pull {}
             cat ~/.passwd | sudo -S -p '' docker pull {}
-        """.format(self.task.image_path, ETCD_IMAGE_PATH).rstrip()
+            cat ~/.passwd | sudo -S -p '' docker pull {}
+        """.format(
+            self.task.image_path,
+            ETCD_IMAGE_PATH,
+            NCAT_IMAGE_PATH).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
@@ -344,33 +349,35 @@ class Workflow():
                 -m {memory} \
                 --network {network} \
                 -v {task_home}/etcd/logs:/root/logs \
-                {image_path}
+                {etcd_image_path}
 
-
-
-            #ATTEMPTS=0
-            #MAX_ATTEMPTS=10
-            #while true; do
-            #    echo "Trying to connect $IP_ADDR:$PORT..."
-            #    nc -v -n -w 1 --send-only $IP_ADDR $PORT < /dev/null
-            #    if [[ $? -eq 0 ]]; then
-            #        exit 0
-            #    fi
-            #    if [[ $ATTEMPTS -eq $MAX_ATTEMPTS ]]; then
-            #        echo "Cannot connect to port $PORT after $ATTEMPTS attempts."
-            #        exit 1
-            #    fi
-            #    ATTEMPTS=$((ATTEMPTS+1))
-            #    echo "Waiting for 5 seconds... ($ATTEMPTS/$MAX_ATTEMPTS)"
-            #    sleep 5
-            #done
+            ETCD_PORT=2379
+            ATTEMPTS=0
+            MAX_ATTEMPTS={max_attempts}
+            while true; do
+                echo "Trying to connect etcd..."
+                cat ~/.passwd | sudo -S -p '' docker run --network {network} \
+                    ncat -v -w 1 --send-only etcd $ETCD_PORT < /dev/null
+                if [[ $? -eq 0 ]]; then
+                    exit 0
+                fi
+                if [[ $ATTEMPTS -eq $MAX_ATTEMPTS ]]; then
+                    echo "Cannot connect to port $ETCD_PORT after $ATTEMPTS attempts."
+                    exit 1
+                fi
+                ATTEMPTS=$((ATTEMPTS+1))
+                echo "Waiting for {sleep} seconds... ($ATTEMPTS/$MAX_ATTEMPTS)"
+                sleep {sleep}
+            done
         """.format(
             task_home=self.workspace.remote.task_home,
             period=self.config.cpu_period,
             quota=self.config.etcd_cpu_quota,
             memory=self.config.etcd_memory,
             network=BENCHMARKER_NETWORK_NAME,
-            image_path=ETCD_IMAGE_PATH).rstrip()
+            etcd_image_path=ETCD_IMAGE_PATH,
+            max_attempts=self.config.max_attempts,
+            sleep=self.config.sleep_interval).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
@@ -636,7 +643,11 @@ class Workflow():
         script = """
             cat ~/.passwd | sudo -S -p '' docker rmi -f {}
             cat ~/.passwd | sudo -S -p '' docker rmi -f {}
-        """.format(self.task.image_path, ETCD_IMAGE_PATH).rstrip()
+            cat ~/.passwd | sudo -S -p '' docker rmi -f {}
+        """.format(
+            self.task.image_path,
+            ETCD_IMAGE_PATH,
+            NCAT_IMAGE_PATH).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:

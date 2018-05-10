@@ -63,10 +63,6 @@ class Configuration():
         return self.prefix
 
     @property
-    def etcd_port(self):
-        return self.__get_value('EtcdPort', SERVICES_SECTION)
-
-    @property
     def small_provider_port(self):
         return self.__get_value('SmallProviderPort', SERVICES_SECTION)
 
@@ -81,6 +77,14 @@ class Configuration():
     @property
     def consumer_port(self):
         return self.__get_value('ConsumerPort', SERVICES_SECTION)
+
+    @property
+    def max_attempts(self):
+        return self.__get_value('MaxAttempts', SERVICES_SECTION)
+
+    @property
+    def sleep_interval(self):
+        return self.__get_value('SleepInterval', SERVICES_SECTION)
 
     @property
     def wrk_threads(self):
