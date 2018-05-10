@@ -628,7 +628,7 @@ class Workflow():
             cat ~/.passwd | sudo -S -p '' docker stop $CID
             cat ~/.passwd | sudo -S -p '' docker rm $CID
             rm -f $CID_FILE
-        """.format(ws=self.workspace.remote).rstrip()
+        """.format(task_home=self.workspace.remote.task_home).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
