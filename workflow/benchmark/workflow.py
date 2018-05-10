@@ -623,11 +623,11 @@ class Workflow():
         self.logger.info('>>> Stop etcd service.')
 
         script = """
-            PID_FILE={ws.task_home}/etcd/run.pid
-            PID=$(cat $PID_FILE)
-            kill -9 $PID
-            rm -f $PID_FILE
-            exit 0
+            CID_FILE={task_home}/etcd/run.cid
+            CID=$(cat $CID_FILE)
+            cat ~/.passwd | sudo -S -p '' docker stop $CID
+            cat ~/.passwd | sudo -S -p '' docker rm $CID
+            rm -f $CID_FILE
         """.format(ws=self.workspace.remote).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
