@@ -340,7 +340,7 @@ class Workflow():
 
             ETCD_HOME={task_home}/etcd
             rm -rf $ETCD_HOME
-            mkdir -p $ETCD_HOME
+            mkdir -p $ETCD_HOME/logs
             cat ~/.passwd | sudo -S -p '' docker run -d \
                 --name etcd \
                 --cidfile $ETCD_HOME/run.cid \
@@ -348,7 +348,7 @@ class Workflow():
                 --cpu-quota {quota} \
                 -m {memory} \
                 --network {network} \
-                -v {task_home}/etcd/logs:/root/logs \
+                -v $ETCD_HOME/logs:/root/logs \
                 {etcd_image_path}
 
             ETCD_PORT=2379
