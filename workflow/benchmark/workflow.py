@@ -14,6 +14,8 @@ from benchmark.model.workspace import Workspace
 
 LOGS_FILE_NAME = 'logs.tar.gz'
 
+ETCD_IMAGE_PATH = 'registry.cn-hangzhou.aliyuncs.com/aliware2018/alpine-etcd'
+
 BENCHMARKER_NETWORK_NAME = 'benchmarker'
 BENCHMARKER_NETWORK_SUBNET = '10.10.10.0/24'
 BENCHMARKER_NETWORK_GATEWAY = '10.10.10.1'
@@ -24,7 +26,7 @@ FAILED_TO_CREATE_REMOTE_TASK_HOME = 1030
 FAILED_TO_LOCK_REMOTE_TASK_HOME = 1040
 FAILED_TO_UPLOAD_DOCKER_PASSWORD_FILE = 1050
 FAILED_TO_LOGIN_TO_DOCKER_REPOSITORY = 1060
-FAILED_TO_PULL_DOCKER_IMAGE = 1070
+FAILED_TO_PULL_DOCKER_IMAGES = 1070
 FAILED_TO_CHECK_CONSUMER_APP_SIGNATURE = 1071
 FAILED_TO_CHECK_PROVIDER_APP_SIGNATURE = 1072
 FAILED_TO_CHECK_ENTRYPOINT_SCRIPT_SIGNATURE = 1073
@@ -37,7 +39,7 @@ FAILED_TO_PRESSURE_APPLICATIONS = 1120
 
 VALID_ERRORS = [
     FAILED_TO_LOGIN_TO_DOCKER_REPOSITORY,
-    FAILED_TO_PULL_DOCKER_IMAGE,
+    FAILED_TO_PULL_DOCKER_IMAGES,
     FAILED_TO_CHECK_CONSUMER_APP_SIGNATURE,
     FAILED_TO_CHECK_PROVIDER_APP_SIGNATURE,
     FAILED_TO_CHECK_ENTRYPOINT_SCRIPT_SIGNATURE,
@@ -73,7 +75,7 @@ class Workflow():
             self.__lock_remote_task_home()
             self.__upload_dockerpwd_file()
             self.__docker_login()
-            self.__pull_docker_image()
+            self.__pull_docker_images()
             self.__check_signatures()
             self.__create_docker_network()
             self.__start_etcd()
@@ -234,19 +236,19 @@ class Workflow():
                 'Failed to login to Docker repository.',
                 error_code=FAILED_TO_LOGIN_TO_DOCKER_REPOSITORY)
 
-    def __pull_docker_image(self):
-        self.logger.info('>>> Pull Docker image.')
+    def __pull_docker_images(self):
+        self.logger.info('>>> Pull Docker images.')
 
         script = """
             cat ~/.passwd | sudo -S -p '' docker pull {}
-            exit 0
-        """.format(self.task.image_path).rstrip()
+            cat ~/.passwd | sudo -S -p '' docker pull {}
+        """.format(self.task.image_path, ETCD_IMAGE_PATH).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
             raise WorkflowError(
-                'Failed to pull Docker image.',
-                error_code=FAILED_TO_PULL_DOCKER_IMAGE)
+                'Failed to pull Docker images.',
+                error_code=FAILED_TO_PULL_DOCKER_IMAGES)
 
     def __check_signatures(self):
         self.logger.info('>>> Check signatures.')
@@ -618,21 +620,21 @@ class Workflow():
             self.logger.warn('Failed to stop etcd service.')
 
     def __cleanup(self):
-        self.__remove_docker_image()
+        self.__remove_docker_images()
         self.__unlock_remote_task_home()
         self.__unlock_local_task_home()
 
-    def __remove_docker_image(self):
-        self.logger.info('>>> Remove Docker image.')
+    def __remove_docker_images(self):
+        self.logger.info('>>> Remove Docker images.')
 
         script = """
             cat ~/.passwd | sudo -S -p '' docker rmi {}
-            exit 0
-        """.format(self.task.image_path).rstrip()
+            cat ~/.passwd | sudo -S -p '' docker rmi {}
+        """.format(self.task.image_path, ETCD_IMAGE_PATH).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
-            self.logger.warn('Failed to remove Docker image.')
+            self.logger.warn('Failed to remove Docker images.')
 
     def __unlock_remote_task_home(self):
         self.logger.info('>>> Unlock remote task home.')
