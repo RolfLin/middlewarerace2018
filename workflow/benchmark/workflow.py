@@ -357,6 +357,7 @@ class Workflow():
             while true; do
                 echo "Trying to connect etcd..."
                 cat ~/.passwd | sudo -S -p '' docker run --network {network} \
+                    {ncat_image_path} \
                     ncat -v -w 1 --send-only etcd $ETCD_PORT < /dev/null
                 if [[ $? -eq 0 ]]; then
                     exit 0
@@ -377,6 +378,7 @@ class Workflow():
             network=BENCHMARKER_NETWORK_NAME,
             etcd_image_path=ETCD_IMAGE_PATH,
             max_attempts=self.config.max_attempts,
+            ncat_image_path=NCAT_IMAGE_PATH,
             sleep=self.config.sleep_interval).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
