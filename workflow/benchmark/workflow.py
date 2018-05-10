@@ -628,8 +628,8 @@ class Workflow():
         self.logger.info('>>> Remove Docker images.')
 
         script = """
-            cat ~/.passwd | sudo -S -p '' docker rmi {}
-            cat ~/.passwd | sudo -S -p '' docker rmi {}
+            cat ~/.passwd | sudo -S -p '' docker rmi -f {}
+            cat ~/.passwd | sudo -S -p '' docker rmi -f {}
         """.format(self.task.image_path, ETCD_IMAGE_PATH).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
