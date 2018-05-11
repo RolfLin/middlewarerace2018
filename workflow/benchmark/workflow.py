@@ -283,7 +283,7 @@ class Workflow():
             [[ $? -ne 0 ]] && cat ~/.passwd | sudo -S -p '' docker stop $CID && exit 103
 
             cat ~/.passwd | sudo -S -p '' docker stop $CID
-            exit 0
+            cat ~/.passwd | sudo -S -p '' docker rm $CID
         """.format(
             image_path=self.task.image_path,
             consumer_app_sha256=self.config.consumer_app_sha256,
