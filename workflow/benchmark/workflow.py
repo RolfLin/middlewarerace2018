@@ -356,14 +356,14 @@ class Workflow():
             MAX_ATTEMPTS={max_attempts}
             while true; do
                 echo "Trying to connect etcd..."
-                cat ~/.passwd | sudo -S -p '' docker run --network {network} \
-                    {ncat_image_path} \
-                    ncat -v -w 1 --send-only etcd $ETCD_PORT < /dev/null
+                cat ~/.passwd | sudo -S -p '' \
+                    docker run --rm --network {network} {ncat_image_path} \
+                    ncat -v -w 1 --send-only etcd $ETCD_PORT
                 if [[ $? -eq 0 ]]; then
                     exit 0
                 fi
                 if [[ $ATTEMPTS -eq $MAX_ATTEMPTS ]]; then
-                    echo "Cannot connect to port $ETCD_PORT after $ATTEMPTS attempts."
+                    echo "Cannot connect to etcd service after $ATTEMPTS attempts."
                     exit 1
                 fi
                 ATTEMPTS=$((ATTEMPTS+1))
@@ -439,31 +439,25 @@ class Workflow():
             MAX_ATTEMPTS={max_attempts}
             while true; do
                 echo "Trying to connect provider-small..."
-                cat ~/.passwd | sudo -S -p '' docker run --network {network} \
-                    {ncat_image_path} \
-                    ncat -v -w 1 --send-only provider-small $PROVIDER_PORT < /dev/null; r1=$?
-                c1=$([[ $r1 -eq 0]] && \{ echo success; \} || \{ echo failed; \})
+                cat ~/.passwd | sudo -S -p '' \
+                    docker run --rm --network {network} {ncat_image_path} \
+                    ncat -v -w 1 --send-only provider-small 20889; r1=$?
 
                 echo "Trying to connect provider-medium..."
-                cat ~/.passwd | sudo -S -p '' docker run --network {network} \
-                    {ncat_image_path} \
-                    ncat -v -w 1 --send-only provider-medium $PROVIDER_PORT < /dev/null; r1=$?
-                c2=$([[ $r2 -eq 0]] && \{ echo success; \} || \{ echo failed; \})
+                cat ~/.passwd | sudo -S -p '' \
+                    docker run --rm --network {network} {ncat_image_path} \
+                    ncat -v -w 1 --send-only provider-medium 20890; r2=$?
 
                 echo "Trying to connect provider-large..."
-                cat ~/.passwd | sudo -S -p '' docker run --network {network} \
-                    {ncat_image_path} \
-                    ncat -v -w 1 --send-only provider-large $PROVIDER_PORT < /dev/null; r1=$?
-                c3=$([[ $r3 -eq 0]] && \{ echo success; \} || \{ echo failed; \})
+                cat ~/.passwd | sudo -S -p '' \
+                    docker run --rm --network {network} {ncat_image_path} \
+                    ncat -v -w 1 --send-only provider-large 20891; r3=$?
 
-                echo "provider-small connect $c1"
-                echo "provider-medium connect $c2"
-                echo "provider-large connect $c3"
                 if [[ $r1 -eq 0 && $r2 -eq 0 && $r3 -eq 0 ]]; then
                     exit 0
                 fi
                 if [[ $ATTEMPTS -eq $MAX_ATTEMPTS ]]; then
-                    echo "Cannot connect to some of the providers after $ATTEMPTS attempts."
+                    echo "Cannot connect to some of the provider services after $ATTEMPTS attempts."
                     exit 1
                 fi
                 ATTEMPTS=$((ATTEMPTS+1))
