@@ -63,22 +63,6 @@ class Configuration():
         return self.prefix
 
     @property
-    def small_provider_port(self):
-        return self.__get_value('SmallProviderPort', SERVICES_SECTION)
-
-    @property
-    def medium_provider_port(self):
-        return self.__get_value('MediumProviderPort', SERVICES_SECTION)
-
-    @property
-    def large_provider_port(self):
-        return self.__get_value('LargeProviderPort', SERVICES_SECTION)
-
-    @property
-    def consumer_port(self):
-        return self.__get_value('ConsumerPort', SERVICES_SECTION)
-
-    @property
     def max_attempts(self):
         return self.__get_value('MaxAttempts', SERVICES_SECTION)
 
