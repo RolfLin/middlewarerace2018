@@ -27,7 +27,7 @@ public class HelloController {
     private List<Endpoint> endpoints = null;
     private Object lock = new Object();
     private OkHttpClient httpClient = new OkHttpClient();
-
+    private static Integer pos = 0;
 
     @RequestMapping(value = "")
     public Object invoke(@RequestParam("interface") String interfaceName,
@@ -62,7 +62,7 @@ public class HelloController {
         }
 
         // 简单的负载均衡，随机取一个
-        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
+        Endpoint endpoint = getEndPoint(endpoints);
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
 
@@ -85,4 +85,17 @@ public class HelloController {
             return Integer.valueOf(s);
         }
     }
+
+    //RoundRobin
+    public static Endpoint getEndPoint(List<Endpoint> endpoints) {
+        Endpoint endpoint;
+        synchronized (pos) {
+            if(pos >= endpoints.size()) {
+                pos = 0;
+            }
+            endpoint = endpoints.get(pos);
+        }
+        return endpoint;
+    }
+
 }
