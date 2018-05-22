@@ -62,8 +62,8 @@ public class HelloController {
         }
 
         // 简单的负载均衡，随机取一个
-//        Endpoint endpoint = getEndPoint(endpoints);
-        Endpoint endpoint = endpoints.get(new Random().nextInt(endpoints.size()));
+        Endpoint endpoint = getEndPoint(endpoints);
+//        Endpoint endpoint = endpoints.get(new Random().nextInt(endpoints.size()));
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
 
@@ -87,16 +87,17 @@ public class HelloController {
         }
     }
 
-//    //RoundRobin
-//    public static Endpoint getEndPoint(List<Endpoint> endpoints) {
-//        Endpoint endpoint;
-//        synchronized (pos) {
-//            if(pos >= endpoints.size()) {
-//                pos = 0;
-//            }
-//            endpoint = endpoints.get(pos);
-//        }
-//        return endpoint;
-//    }
+    //RoundRobin
+    public static Endpoint getEndPoint(List<Endpoint> endpoints) {
+        Endpoint endpoint;
+        synchronized (pos) {
+            if(pos >= endpoints.size()) {
+                pos = 0;
+            }
+            endpoint = endpoints.get(pos);
+            pos++;
+        }
+        return endpoint;
+    }
 
 }
