@@ -90,13 +90,13 @@ public class HelloController {
     //RoundRobin
     public static Endpoint getEndPoint(List<Endpoint> endpoints) {
         Endpoint endpoint;
-        synchronized (pos) {
+//        synchronized (pos) {
             if(pos >= endpoints.size()) {
                 pos = 0;
             }
             endpoint = endpoints.get(pos);
             pos++;
-        }
+//        }
         return endpoint;
     }
 
