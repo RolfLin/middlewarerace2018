@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 第四界阿里中间件性能挑战赛评测环境搭建指南
 
 ## 一、前期准备
@@ -99,6 +98,3 @@ $ pipenv run python bootstrap.py -p <prefix>
 ```
 
 **注：prefix 参数即为被压机的 hostname 前缀。**
-=======
-# middlewarerace2018
->>>>>>> 182ed393a655150ee527caff2cc567a5ae4c61a2
