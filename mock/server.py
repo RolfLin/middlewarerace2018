@@ -28,9 +28,9 @@ class Server(BaseHTTPRequestHandler):
                     "teamId": 1000,
                     "taskid": 2000,
                     "gitpath": "https://code.aliyun.com/tangrui.cn/dubbo-tianchi-demo.git",
-                    "imagepath": "registry.cn-hangzhou.aliyuncs.com/tianchi4-docker/dubbo-tianchi-demo",
-                    "imagerepouser": "<username to login to image repo>",
-                    "imagerepopassword": "<password to login to image repo>"
+                    "imagepath": "registry.cn-qingdao.aliyuncs.com/dmirtianchi/tianchi_3",
+ 	             "imagerepouser": "15622363122",
+                    "imagerepopassword": "huangzelin123"
                 }
             }
         """, 'utf-8'))

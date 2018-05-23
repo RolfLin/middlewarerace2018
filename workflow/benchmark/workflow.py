@@ -259,6 +259,7 @@ class Workflow():
             while true; do
                 echo "Trying to connect $IP_ADDR:$PORT..."
                 nc -v -n -w 1 --send-only $IP_ADDR $PORT < /dev/null
+                echo "cnmb"
                 if [[ $? -eq 0 ]]; then
                     exit 0
                 fi
