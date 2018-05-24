@@ -14,13 +14,28 @@ from benchmark.model.workspace import Workspace
 
 LOGS_FILE_NAME = 'logs.tar.gz'
 
+ETCD_IMAGE_PATH = 'registry.cn-hangzhou.aliyuncs.com/aliware2018/alpine-etcd'
+NCAT_IMAGE_PATH = 'registry.cn-hangzhou.aliyuncs.com/aliware2018/alpine-nmap-ncat'  # noqa: E501
+
+BENCHMARKER_NETWORK_NAME = 'benchmarker'
+BENCHMARKER_NETWORK_SUBNET = '10.10.10.0/24'
+BENCHMARKER_NETWORK_GATEWAY = '10.10.10.1'
+
+ETCD_PORT = 2379
+PROVIDER_PORT = 20880
+CONSUMER_PORT = 8087
+
 FAILED_TO_LOCK_LOCAL_WORKSPACE = 1010
 FAILED_TO_GENERATE_DOCKER_PASSWORD_FILE = 1020
 FAILED_TO_CREATE_REMOTE_TASK_HOME = 1030
 FAILED_TO_LOCK_REMOTE_TASK_HOME = 1040
 FAILED_TO_UPLOAD_DOCKER_PASSWORD_FILE = 1050
 FAILED_TO_LOGIN_TO_DOCKER_REPOSITORY = 1060
-FAILED_TO_PULL_DOCKER_IMAGE = 1070
+FAILED_TO_PULL_DOCKER_IMAGES = 1070
+FAILED_TO_CHECK_CONSUMER_APP_SIGNATURE = 1071
+FAILED_TO_CHECK_PROVIDER_APP_SIGNATURE = 1072
+FAILED_TO_CHECK_ENTRYPOINT_SCRIPT_SIGNATURE = 1073
+FAILED_TO_CREATE_DOCKER_NETWORK = 1074
 FAILED_TO_START_ETCD_SERVICE = 1080
 FAILED_TO_START_PROVIDER_SERVICES = 1090
 FAILED_TO_START_CONSUMER_SERVICE = 1100
@@ -29,7 +44,10 @@ FAILED_TO_PRESSURE_APPLICATIONS = 1120
 
 VALID_ERRORS = [
     FAILED_TO_LOGIN_TO_DOCKER_REPOSITORY,
-    FAILED_TO_PULL_DOCKER_IMAGE,
+    FAILED_TO_PULL_DOCKER_IMAGES,
+    FAILED_TO_CHECK_CONSUMER_APP_SIGNATURE,
+    FAILED_TO_CHECK_PROVIDER_APP_SIGNATURE,
+    FAILED_TO_CHECK_ENTRYPOINT_SCRIPT_SIGNATURE,
     FAILED_TO_START_PROVIDER_SERVICES,
     FAILED_TO_START_CONSUMER_SERVICE
 ]
@@ -62,7 +80,9 @@ class Workflow():
             self.__lock_remote_task_home()
             self.__upload_dockerpwd_file()
             self.__docker_login()
-            self.__pull_docker_image()
+            self.__pull_docker_images()
+            self.__check_signatures()
+            self.__create_docker_network()
             self.__start_etcd()
             self.__start_providers()
             self.__start_consumer()
@@ -221,19 +241,93 @@ class Workflow():
                 'Failed to login to Docker repository.',
                 error_code=FAILED_TO_LOGIN_TO_DOCKER_REPOSITORY)
 
-    def __pull_docker_image(self):
-        self.logger.info('>>> Pull Docker image.')
+    def __pull_docker_images(self):
+        self.logger.info('>>> Pull Docker images.')
 
         script = """
             cat ~/.passwd | sudo -S -p '' docker pull {}
-            exit 0
-        """.format(self.task.image_path).rstrip()
+            cat ~/.passwd | sudo -S -p '' docker pull {}
+            cat ~/.passwd | sudo -S -p '' docker pull {}
+        """.format(
+            self.task.image_path,
+            ETCD_IMAGE_PATH,
+            NCAT_IMAGE_PATH).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
             raise WorkflowError(
-                'Failed to pull Docker image.',
-                error_code=FAILED_TO_PULL_DOCKER_IMAGE)
+                'Failed to pull Docker images.',
+                error_code=FAILED_TO_PULL_DOCKER_IMAGES)
+
+    def __check_signatures(self):
+        self.logger.info('>>> Check signatures.')
+
+        script = """
+            # noqa: E501
+
+            if [[ -f /tmp/run.cid ]]; then
+                cat ~/.passwd | sudo -S -p '' rm /tmp/run.cid
+            fi
+
+            cat ~/.passwd | sudo -S -p '' docker run --rm -i --entrypoint='' {image_path} bash -c 'sha256sum -c < <(echo {consumer_app_sha256})'
+            [[ $? -ne 0 ]] && cat ~/.passwd | sudo -S -p '' docker stop $CID && exit 101
+
+            cat ~/.passwd | sudo -S -p '' docker run --rm -i --entrypoint='' {image_path} bash -c 'sha256sum -c < <(echo {provider_app_sha256})'
+            [[ $? -ne 0 ]] && cat ~/.passwd | sudo -S -p '' docker stop $CID && exit 102
+
+            cat ~/.passwd | sudo -S -p '' docker run --rm -i --entrypoint='' {image_path} bash -c 'sha256sum -c < <(echo {entrypoint_script_sha256})'
+            [[ $? -ne 0 ]] && cat ~/.passwd | sudo -S -p '' docker stop $CID && exit 103
+        """.format(
+            image_path=self.task.image_path,
+            consumer_app_sha256=self.config.consumer_app_sha256,
+            provider_app_sha256=self.config.provider_app_sha256,
+            entrypoint_script_sha256=self.config.entrypoint_script_sha256)
+
+        returncode, outs, _ = self.__run_remote_script(script)
+        if returncode == 0:
+            return
+        if returncode == 101:
+            raise WorkflowError(
+                'Failed to check consumer app signature.',
+                error_code=FAILED_TO_CHECK_CONSUMER_APP_SIGNATURE)
+        if returncode == 102:
+            raise WorkflowError(
+                'Failed to check provider app signature.',
+                error_code=FAILED_TO_CHECK_PROVIDER_APP_SIGNATURE)
+        if returncode == 103:
+            raise WorkflowError(
+                'Failed to check entrypoint script signature.',
+                error_code=FAILED_TO_CHECK_ENTRYPOINT_SCRIPT_SIGNATURE)
+
+    def __create_docker_network(self):
+        self.logger.info('>>> Create Docker network.')
+
+        script = """
+            # noqa: E501
+
+            CID=$(cat ~/.passwd | sudo -S -p '' docker network ls --filter name={name} -q)
+            if [[ "$CID" != "" ]]; then
+                echo "[WARN] Network named '{name}' already exists, skip creating."
+                exit 0
+            fi
+            cat ~/.passwd | sudo -S -p '' docker network create \
+                --driver=bridge \
+                --subnet={subnet} \
+                --gateway={gateway} \
+                -o "com.docker.network.bridge.name"="benchmarker" \
+                -o "com.docker.network.bridge.enable_icc"="true" \
+                {name}
+            cat ~/.passwd | sudo -S -p '' ifconfig {name} {gateway} netmask 255.255.255.0
+        """.format(
+            subnet=BENCHMARKER_NETWORK_SUBNET,
+            gateway=BENCHMARKER_NETWORK_GATEWAY,
+            name=BENCHMARKER_NETWORK_NAME).rstrip()
+
+        returncode, outs, _ = self.__run_remote_script(script)
+        if returncode != 0:
+            raise WorkflowError(
+                'Failed to create Docker network [{}]'.format(BENCHMARKER_NETWORK_NAME),  # noqa: E501
+                FAILED_TO_CREATE_DOCKER_NETWORK)
 
     def __start_etcd(self):
         self.logger.info('>>> Start etcd service.')
@@ -241,39 +335,49 @@ class Workflow():
         script = """
             # noqa: E501
 
-            ETCD_HOME={ws.task_home}/etcd
-            IP_ADDR=$(ip addr show docker0 | grep 'inet\\b' | awk '{{print $2}}' | cut -d '/' -f 1)
-            PORT={port}
-            CLIENT_URL=http://$IP_ADDR:$PORT
-
+            ETCD_HOME={task_home}/etcd
             rm -rf $ETCD_HOME
-            mkdir -p $ETCD_HOME
-            nohup /opt/etcd/etcd \
-                  --listen-client-urls $CLIENT_URL \
-                  --advertise-client-urls $CLIENT_URL \
-                  --data-dir $ETCD_HOME/data > $ETCD_HOME/etcd.log 2>&1 &
-            echo $! > $ETCD_HOME/run.pid
+            mkdir -p $ETCD_HOME/logs
+            cat ~/.passwd | sudo -S -p '' docker run -d \
+                --name=etcd \
+                --cidfile=$ETCD_HOME/run.cid \
+                --cpu-period={period} \
+                --cpu-quota={quota} \
+                --memory={memory} \
+                --network={network} \
+                -v $ETCD_HOME/logs:/root/logs \
+                {etcd_image_path}
 
+            echo $IP_ADDR
             ATTEMPTS=0
-            MAX_ATTEMPTS=10
+            MAX_ATTEMPTS={max_attempts}
             while true; do
-                echo "Trying to connect $IP_ADDR:$PORT..."
-                nc -v -n -w 1 --send-only $IP_ADDR $PORT < /dev/null
-                echo "cnmb"
+                echo "Trying to connect etcd..."
+                cat ~/.passwd | sudo -S -p '' \
+                    docker run --rm --network={network} {ncat_image_path} \
+                    ncat -v -w 1 --send-only etcd {etcd_port}
                 if [[ $? -eq 0 ]]; then
                     exit 0
                 fi
                 if [[ $ATTEMPTS -eq $MAX_ATTEMPTS ]]; then
-                    echo "Cannot connect to port $PORT after $ATTEMPTS attempts."
+                    echo "Cannot connect to etcd service after $ATTEMPTS attempts."
                     exit 1
                 fi
                 ATTEMPTS=$((ATTEMPTS+1))
-                echo "Waiting for 5 seconds... ($ATTEMPTS/$MAX_ATTEMPTS)"
-                sleep 5
+                echo "Waiting for {sleep} seconds... ($ATTEMPTS/$MAX_ATTEMPTS)"
+                sleep {sleep}
             done
         """.format(
-            ws=self.workspace.remote,
-            port=self.config.etcd_port).rstrip()
+            task_home=self.workspace.remote.task_home,
+            period=self.config.cpu_period,
+            quota=self.config.etcd_cpu_quota,
+            memory=self.config.etcd_memory,
+            network=BENCHMARKER_NETWORK_NAME,
+            etcd_image_path=ETCD_IMAGE_PATH,
+            max_attempts=self.config.max_attempts,
+            etcd_port=ETCD_PORT,
+            ncat_image_path=NCAT_IMAGE_PATH,
+            sleep=self.config.sleep_interval).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
@@ -285,77 +389,84 @@ class Workflow():
         self.logger.info('>>> Start provider services.')
 
         template = """
-            cd {ws.task_home}
-            if [[ -d provider-{scale} ]]; then
-                rm -rf provider-{scale}
-            fi
-            mkdir -p provider-{scale}/logs
-            cd provider-{scale}
+            PROVIDER_HOME={task_home}/provider-{scale}
+            rm -rf $PROVIDER_HOME
+            mkdir -p $PROVIDER_HOME/logs
             cat ~/.passwd | sudo -S -p '' docker run -d \
-                --name provider-{scale} \
-                --cidfile run.cid \
-                --cpu-period {period} \
-                --cpu-quota {quota} \
-                -m {memory} \
-                --network host \
-                -v {ws.task_home}/provider-{scale}/logs:/root/logs \
-                {task.image_path} provider-{scale}
+                --name=provider-{scale} \
+                --cidfile=$PROVIDER_HOME/run.cid \
+                --cpu-period={period} \
+                --cpu-quota={quota} \
+                --memory={memory} \
+                --network={network} \
+                -v $PROVIDER_HOME/logs:/root/logs \
+                {image_path} provider-{scale}
         """.rstrip()
         remote = self.workspace.remote
         task = self.task
         script = ''
         script += template.format(
-            ws=remote,
+            task_home=remote.task_home,
             scale='small',
             period=self.config.cpu_period,
             quota=self.config.small_provider_cpu_quota,
             memory=self.config.small_provider_memory,
-            task=task)
+            network=BENCHMARKER_NETWORK_NAME,
+            image_path=task.image_path)
         script += template.format(
-            ws=remote,
+            task_home=remote.task_home,
             scale='medium',
             period=self.config.cpu_period,
             quota=self.config.medium_provider_cpu_quota,
             memory=self.config.medium_provider_memory,
-            task=task)
+            network=BENCHMARKER_NETWORK_NAME,
+            image_path=task.image_path)
         script += template.format(
-            ws=remote,
+            task_home=remote.task_home,
             scale='large',
             period=self.config.cpu_period,
             quota=self.config.large_provider_cpu_quota,
             memory=self.config.large_provider_memory,
-            task=task)
+            network=BENCHMARKER_NETWORK_NAME,
+            image_path=task.image_path)
         script += """
             # noqa: E501
 
             ATTEMPTS=0
-            MAX_ATTEMPTS=10
+            MAX_ATTEMPTS={max_attempts}
             while true; do
-                echo "Trying to connect 127.0.0.1:{port1}..."
-                nc -v -n -w 1 --send-only 127.0.0.1 {port1} < /dev/null; r1=$?
+                echo "Trying to connect provider-small..."
+                cat ~/.passwd | sudo -S -p '' \
+                    docker run --rm --network={network} {ncat_image_path} \
+                    ncat -v -w 1 --send-only provider-small {provider_port}; r1=$?
 
-                echo "Trying to connect 127.0.0.1:{port2}..."
-                nc -v -n -w 1 --send-only 127.0.0.1 {port2} < /dev/null; r2=$?
+                echo "Trying to connect provider-medium..."
+                cat ~/.passwd | sudo -S -p '' \
+                    docker run --rm --network={network} {ncat_image_path} \
+                    ncat -v -w 1 --send-only provider-medium {provider_port}; r2=$?
 
-                echo "Trying to connect 127.0.0.1:{port3}..."
-                nc -v -n -w 1 --send-only 127.0.0.1 {port3} < /dev/null; r3=$?
+                echo "Trying to connect provider-large..."
+                cat ~/.passwd | sudo -S -p '' \
+                    docker run --rm --network={network} {ncat_image_path} \
+                    ncat -v -w 1 --send-only provider-large {provider_port}; r3=$?
 
-                echo $r1, $r2, $r3
                 if [[ $r1 -eq 0 && $r2 -eq 0 && $r3 -eq 0 ]]; then
                     exit 0
                 fi
                 if [[ $ATTEMPTS -eq $MAX_ATTEMPTS ]]; then
-                    echo "Cannot connect to some of the ports {port1}, {port2}, {port3} after $ATTEMPTS attempts."
+                    echo "Cannot connect to some of the provider services after $ATTEMPTS attempts."
                     exit 1
                 fi
                 ATTEMPTS=$((ATTEMPTS+1))
-                echo "Waiting for 5 seconds... ($ATTEMPTS/$MAX_ATTEMPTS)"
-                sleep 5
+                echo "Waiting for {sleep} seconds... ($ATTEMPTS/$MAX_ATTEMPTS)"
+                sleep {sleep}
             done
         """.format(
-            port1=self.config.small_provider_port,
-            port2=self.config.medium_provider_port,
-            port3=self.config.large_provider_port).rstrip()
+            max_attempts=self.config.max_attempts,
+            network=BENCHMARKER_NETWORK_NAME,
+            ncat_image_path=NCAT_IMAGE_PATH,
+            provider_port=PROVIDER_PORT,
+            sleep=self.config.sleep_interval).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
@@ -369,45 +480,49 @@ class Workflow():
         script = """
             # noqa: E501
 
-            cd {ws.task_home}
-            if [[ -d consumer ]]; then
-                rm -rf consumer
-            fi
-            mkdir -p consumer/logs
-            cd consumer
+            CONSUMER_HOME={task_home}/consumer
+            rm -rf $CONSUMER_HOME
+            mkdir -p $CONSUMER_HOME/logs
             cat ~/.passwd | sudo -S -p '' docker run -d \
-                --name consumer \
-                --cidfile run.cid \
-                --cpu-period {period} \
-                --cpu-quota {quota} \
-                -m {memory} \
-                --network host \
-                -v {ws.task_home}/consumer/logs:/root/logs \
-                {task.image_path} consumer
+                --name=consumer \
+                --cidfile=$CONSUMER_HOME/run.cid \
+                --cpu-period={period} \
+                --cpu-quota={quota} \
+                --memory={memory} \
+                --network={network} \
+                -v $CONSUMER_HOME/logs:/root/logs \
+                -p 80:{consumer_port} \
+                {image_path} consumer
 
             ATTEMPTS=0
-            MAX_ATTEMPTS=10
+            MAX_ATTEMPTS={max_attempts}
             while true; do
-                echo "Trying to connect 127.0.0.1:{port}..."
-                nc -v -n -w 1 --send-only 127.0.0.1 {port} < /dev/null
+                echo "Trying to connect consumer..."
+                cat ~/.passwd | sudo -S -p '' \
+                    docker run --rm --network={network} {ncat_image_path} \
+                    ncat -v -w 1 --send-only consumer {consumer_port}
                 if [[ $? -eq 0 ]]; then
                     exit 0
                 fi
                 if [[ $ATTEMPTS -eq $MAX_ATTEMPTS ]]; then
-                    echo "Cannot connect to port {port} after $ATTEMPTS attempts."
+                    echo "Cannot connect to consumer service after $ATTEMPTS attempts."
                     exit 1
                 fi
                 ATTEMPTS=$((ATTEMPTS+1))
-                echo "Waiting for 5 seconds... ($ATTEMPTS/$MAX_ATTEMPTS)"
-                sleep 5
+                echo "Waiting for {sleep} seconds... ($ATTEMPTS/$MAX_ATTEMPTS)"
+                sleep {sleep}
             done
         """.format(
-            ws=self.workspace.remote,
+            task_home=self.workspace.remote.task_home,
             period=self.config.cpu_period,
             quota=self.config.consumer_cpu_quota,
             memory=self.config.consumer_memory,
-            task=self.task,
-            port=self.config.consumer_port).rstrip()
+            network=BENCHMARKER_NETWORK_NAME,
+            image_path=self.task.image_path,
+            max_attempts=self.config.max_attempts,
+            ncat_image_path=NCAT_IMAGE_PATH,
+            consumer_port=CONSUMER_PORT,
+            sleep=self.config.sleep_interval).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
@@ -420,14 +535,13 @@ class Workflow():
             sleep {sleep}
             wrk -t{threads} -c{connections} -d{duration} -T{timeout} \
                 --script=./benchmark/wrk.lua \
-                --latency http://{hostname}:{port}/invoke
+                --latency http://{hostname}/invoke
             exit 0
         """.rstrip()
         tpl = partial(
             template.format,
             timeout=self.config.wrk_timeout,
-            hostname=self.workspace.remote.hostname,
-            port=self.config.consumer_port)
+            hostname=self.workspace.remote.hostname)
 
         self.logger.info('>>> Warmup.')
         script = ''
@@ -477,14 +591,15 @@ class Workflow():
 
         script = """
             # noqa: E501
-            CID_FILE={ws.task_home}/consumer/run.cid
+
+            CID_FILE={task_home}/consumer/run.cid
             CID=$(cat $CID_FILE)
             cat ~/.passwd | sudo -S -p '' docker stop $CID
-            cat ~/.passwd | sudo -S -p '' docker logs $CID > {ws.task_home}/consumer/logs/docker.log
+            cat ~/.passwd | sudo -S -p '' docker logs $CID > {task_home}/consumer/logs/docker.log
             cat ~/.passwd | sudo -S -p '' docker rm $CID
             rm -f $CID_FILE
             exit 0
-        """.format(ws=self.workspace.remote).rstrip()
+        """.format(task_home=self.workspace.remote.task_home).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
@@ -495,16 +610,17 @@ class Workflow():
 
         template = """
             # noqa: E501
-            CID_FILE={ws.task_home}/provider-{scale}/run.cid
+
+            CID_FILE={task_home}/provider-{scale}/run.cid
             CID=$(cat $CID_FILE)
             cat ~/.passwd | sudo -S -p '' docker stop $CID
-            cat ~/.passwd | sudo -S -p '' docker logs $CID > {ws.task_home}/provider-{scale}/logs/docker.log
+            cat ~/.passwd | sudo -S -p '' docker logs $CID > {task_home}/provider-{scale}/logs/docker.log
             cat ~/.passwd | sudo -S -p '' docker rm $CID
             rm -f $CID_FILE
         """.rstrip()
         script = ''
         for scale in ['small', 'medium', 'large']:
-            script += template.format(ws=self.workspace.remote, scale=scale)
+            script += template.format(task_home=self.workspace.remote.task_home, scale=scale)  # noqa: E501
         script += """
             exit 0
         """.rstrip()
@@ -517,43 +633,50 @@ class Workflow():
         self.logger.info('>>> Stop etcd service.')
 
         script = """
-            PID_FILE={ws.task_home}/etcd/run.pid
-            PID=$(cat $PID_FILE)
-            kill -9 $PID
-            rm -f $PID_FILE
-            exit 0
-        """.format(ws=self.workspace.remote).rstrip()
+            # noqa: E501
+
+            CID_FILE={task_home}/etcd/run.cid
+            CID=$(cat $CID_FILE)
+            cat ~/.passwd | sudo -S -p '' docker stop $CID
+            cat ~/.passwd | sudo -S -p '' docker logs $CID > {task_home}/etcd/logs/docker.log
+            cat ~/.passwd | sudo -S -p '' docker rm $CID
+            rm -f $CID_FILE
+        """.format(task_home=self.workspace.remote.task_home).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
             self.logger.warn('Failed to stop etcd service.')
 
     def __cleanup(self):
-        self.__remove_docker_image()
+        self.__remove_docker_images()
         self.__unlock_remote_task_home()
         self.__unlock_local_task_home()
 
-    def __remove_docker_image(self):
-        self.logger.info('>>> Remove Docker image.')
+    def __remove_docker_images(self):
+        self.logger.info('>>> Remove Docker images.')
 
         script = """
-            cat ~/.passwd | sudo -S -p '' docker rmi {}
-            exit 0
-        """.format(self.task.image_path).rstrip()
+            cat ~/.passwd | sudo -S -p '' docker rmi -f {}
+            cat ~/.passwd | sudo -S -p '' docker rmi -f {}
+            cat ~/.passwd | sudo -S -p '' docker rmi -f {}
+        """.format(
+            self.task.image_path,
+            ETCD_IMAGE_PATH,
+            NCAT_IMAGE_PATH).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
-            self.logger.warn('Failed to remove Docker image.')
+            self.logger.warn('Failed to remove Docker images.')
 
     def __unlock_remote_task_home(self):
         self.logger.info('>>> Unlock remote task home.')
 
         script = """
-            if [[ -f {ws.lock_file} ]]; then
-                rm -f {ws.lock_file}
+            if [[ -f {lock_file} ]]; then
+                rm -f {lock_file}
             fi
             exit 0
-        """.format(ws=self.workspace.remote).rstrip()
+        """.format(lock_file=self.workspace.remote.lock_file).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)
         if returncode != 0:
@@ -583,11 +706,11 @@ class Workflow():
 
     def __download_logs(self):
         script = """
-            cd {remote.task_home}
+            cd {task_home}
             tar -czf ../{file_name} *
             exit 0
         """.format(
-            remote=self.workspace.remote,
+            task_home=self.workspace.remote.task_home,
             file_name=LOGS_FILE_NAME).rstrip()
 
         returncode, outs, _ = self.__run_remote_script(script)

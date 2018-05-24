@@ -19,6 +19,18 @@ class Configuration():
         return self.config[section][key]
 
     @property
+    def consumer_app_sha256(self):
+        return self.__get_value('ConsumerAppSha256')
+
+    @property
+    def provider_app_sha256(self):
+        return self.__get_value('ProviderAppSha256')
+
+    @property
+    def entrypoint_script_sha256(self):
+        return self.__get_value('EntrypointScriptSha256')
+
+    @property
     def access_token(self):
         return self.__get_value('Token', TIANCHI_SECTION)
 
@@ -51,24 +63,12 @@ class Configuration():
         return self.prefix
 
     @property
-    def etcd_port(self):
-        return self.__get_value('EtcdPort', SERVICES_SECTION)
+    def max_attempts(self):
+        return self.__get_value('MaxAttempts', SERVICES_SECTION)
 
     @property
-    def small_provider_port(self):
-        return self.__get_value('SmallProviderPort', SERVICES_SECTION)
-
-    @property
-    def medium_provider_port(self):
-        return self.__get_value('MediumProviderPort', SERVICES_SECTION)
-
-    @property
-    def large_provider_port(self):
-        return self.__get_value('LargeProviderPort', SERVICES_SECTION)
-
-    @property
-    def consumer_port(self):
-        return self.__get_value('ConsumerPort', SERVICES_SECTION)
+    def sleep_interval(self):
+        return self.__get_value('SleepInterval', SERVICES_SECTION)
 
     @property
     def wrk_threads(self):
@@ -101,6 +101,14 @@ class Configuration():
     @property
     def cpu_period(self):
         return self.__get_value('CpuPeriod', DOCKER_SECTION)
+
+    @property
+    def etcd_cpu_quota(self):
+        return self.__get_value('EtcdCpuQuota', DOCKER_SECTION)
+
+    @property
+    def etcd_memory(self):
+        return self.__get_value('EtcdMemory', DOCKER_SECTION)
 
     @property
     def small_provider_cpu_quota(self):
