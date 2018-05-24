@@ -63,7 +63,7 @@ public class HelloController {
 
         // 简单的负载均衡，随机取一个
 //        Endpoint endpoint = getEndPoint(endpoints);
-        Endpoint endpoint = endpoints.get(new Random().nextInt(endpoints.size()));
+        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
 
