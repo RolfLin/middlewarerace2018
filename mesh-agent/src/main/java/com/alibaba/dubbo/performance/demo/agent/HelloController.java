@@ -4,6 +4,7 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
+import com.alibaba.dubbo.performance.demo.agent.registry.netty.NettyClient;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ public class HelloController {
     private IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
 
     private RpcClient rpcClient = new RpcClient(registry);
+    private NettyClient nettyClient = new NettyClient(registry);
     private Random random = new Random();
     private List<Endpoint> endpoints = null;
     private Object lock = new Object();
@@ -65,26 +67,30 @@ public class HelloController {
 //        Endpoint endpoint = getEndPoint(endpoints);
         Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
 
-        String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
-
-        RequestBody requestBody = new FormBody.Builder()
-                .add("interface",interfaceName)
-                .add("method",method)
-                .add("parameterTypesString",parameterTypesString)
-                .add("parameter",parameter)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .build();
-
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-            byte[] bytes = response.body().bytes();
-            String s = new String(bytes);
-            return Integer.valueOf(s);
-        }
+        //netty
+        Object result = nettyClient.invoke(interfaceName,method,parameterTypesString,parameter,endpoint.getHost(), endpoint.getPort());
+        String s = new String((byte[]) result);
+        return Integer.valueOf(s);
+//        String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
+//
+//        RequestBody requestBody = new FormBody.Builder()
+//                .add("interface",interfaceName)
+//                .add("method",method)
+//                .add("parameterTypesString",parameterTypesString)
+//                .add("parameter",parameter)
+//                .build();
+//
+//        Request request = new Request.Builder()
+//                .url(url)
+//                .post(requestBody)
+//                .build();
+//
+//        try (Response response = httpClient.newCall(request).execute()) {
+//            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+//            byte[] bytes = response.body().bytes();
+//            String s = new String(bytes);
+//            return Integer.valueOf(s);
+//        }
     }
 
     //RoundRobin

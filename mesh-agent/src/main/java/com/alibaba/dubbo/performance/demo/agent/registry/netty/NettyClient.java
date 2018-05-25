@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo;
+package com.alibaba.dubbo.performance.demo.agent.registry.netty;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.Request;
@@ -16,18 +16,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
-public class RpcClient {
-    private Logger logger = LoggerFactory.getLogger(RpcClient.class);
+public class NettyClient {
 
-    private ConnecManager connectManager;
+    private Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
-    public RpcClient(IRegistry registry){
-        this.connectManager = new ConnecManager();
+    private ServiceConnectManager serviceConnectManager;
+
+    public NettyClient(IRegistry registry){
+        this.serviceConnectManager = new ServiceConnectManager();
     }
 
-    public Object invoke(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
+    public Object invoke(String interfaceName, String method, String parameterTypesString, String parameter, String host, Integer post) throws Exception {
 
-        Channel channel = connectManager.getChannel();
+        Channel channel = serviceConnectManager.getChannel(host, post);
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName(method);
