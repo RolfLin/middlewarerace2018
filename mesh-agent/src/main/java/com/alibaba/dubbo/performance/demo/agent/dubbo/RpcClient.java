@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class RpcClient {
     private Logger logger = LoggerFactory.getLogger(RpcClient.class);
@@ -49,7 +51,11 @@ public class RpcClient {
         RpcFuture future = new RpcFuture();
         RpcRequestHolder.put(String.valueOf(request.getId()),future);
 
-        channel.writeAndFlush(request);
+        ExecutorService executor = Executors.newCachedThreadPool();
+        for (int i = 0; i < 10; i++) {
+            executor.execute((Runnable) channel.writeAndFlush(request));
+        }
+
 
         Object result = null;
         try {
