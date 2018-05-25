@@ -58,7 +58,7 @@ public class ServiceConnectManager {
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                 .channel(NioSocketChannel.class)
-                .handler(new RpcClientInitializer());
+                .handler(new ServiceInitializer());
     }
 
 }
