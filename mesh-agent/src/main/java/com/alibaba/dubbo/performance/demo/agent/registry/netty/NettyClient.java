@@ -50,7 +50,7 @@ public class NettyClient {
         RpcFuture future = new RpcFuture();
         RpcRequestHolder.put(String.valueOf(request.getId()),future);
 
-        channel.writeAndFlush(request);
+//        channel.writeAndFlush(request);
 
         Object result = null;
         try {
