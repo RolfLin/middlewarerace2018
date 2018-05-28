@@ -56,16 +56,16 @@ public class NettyClient {
                 .add("parameter",parameter)
                 .build();
 
-        okhttp3.Request request = new okhttp3.Request.Builder()
+//        okhttp3.Request request = new okhttp3.Request.Builder()
 //                .url(url)
-                .post(requestBody)
-                .build();
+//                .post(requestBody)
+//                .build();
 
 
         RpcFuture future = new RpcFuture();
 //        RpcRequestHolder.put(String.valueOf(request.getId()),future);
 
-        channel.writeAndFlush(request);
+        channel.writeAndFlush(requestBody);
 
         Object result = null;
         try {
