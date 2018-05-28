@@ -8,6 +8,8 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcRequestHolder;
 
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
 import io.netty.channel.Channel;
+import okhttp3.FormBody;
+import okhttp3.RequestBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -30,25 +32,38 @@ public class NettyClient {
 
         Channel channel = serviceConnectManager.getChannel(host, post);
 
-        RpcInvocation invocation = new RpcInvocation();
-        invocation.setMethodName(method);
-        invocation.setAttachment("path", interfaceName);
-        invocation.setParameterTypes(parameterTypesString);    // Dubbo内部用"Ljava/lang/String"来表示参数类型是String
+//        RpcInvocation invocation = new RpcInvocation();
+//        invocation.setMethodName(method);
+//        invocation.setAttachment("interface", interfaceName);
+//        invocation.setParameterTypes(parameterTypesString);    // Dubbo内部用"Ljava/lang/String"来表示参数类型是String
+//
+//        ByteArrayOutputStream out = new ByteArrayOutputStream();
+//        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+//        JsonUtils.writeObject(parameter, writer);
+//        invocation.setArguments(out.toByteArray());
+//
+//        Request request = new Request();
+//        request.setVersion("2.0.0");
+//        request.setTwoWay(true);
+//        request.setData(invocation);
+//
+//        logger.info("requestId=" + request.getId());
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-        JsonUtils.writeObject(parameter, writer);
-        invocation.setArguments(out.toByteArray());
+        RequestBody requestBody = new FormBody.Builder()
+                .add("interface",interfaceName)
+                .add("method",method)
+                .add("parameterTypesString",parameterTypesString)
+                .add("parameter",parameter)
+                .build();
 
-        Request request = new Request();
-        request.setVersion("2.0.0");
-        request.setTwoWay(true);
-        request.setData(invocation);
+        okhttp3.Request request = new okhttp3.Request.Builder()
+//                .url(url)
+                .post(requestBody)
+                .build();
 
-        logger.info("requestId=" + request.getId());
 
         RpcFuture future = new RpcFuture();
-        RpcRequestHolder.put(String.valueOf(request.getId()),future);
+//        RpcRequestHolder.put(String.valueOf(request.getId()),future);
 
         channel.writeAndFlush(request);
 
