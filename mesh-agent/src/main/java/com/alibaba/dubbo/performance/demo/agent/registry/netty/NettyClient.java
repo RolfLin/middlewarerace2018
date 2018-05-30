@@ -7,9 +7,13 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcRequestHolder;
 
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
+import com.alibaba.dubbo.performance.demo.agent.registry.model.RequestBody;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.*;
+import io.netty.util.CharsetUtil;
 import okhttp3.FormBody;
-import okhttp3.RequestBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -17,6 +21,9 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class NettyClient {
 
@@ -49,18 +56,22 @@ public class NettyClient {
 //
 //        logger.info("requestId=" + request.getId());
 
-        RequestBody requestBody = new FormBody.Builder()
-                .add("interface",interfaceName)
-                .add("method",method)
-                .add("parameterTypesString",parameterTypesString)
-                .add("parameter",parameter)
-                .build();
+//        RequestBody requestBody = new FormBody.Builder()
+//                .add("interface",interfaceName)
+//                .add("method",method)
+//                .add("parameterTypesString",parameterTypesString)
+//                .add("parameter",parameter)
+//                .build();
 
 //        okhttp3.Request request = new okhttp3.Request.Builder()
 //                .url(url)
 //                .post(requestBody)
 //                .build();
-
+        RequestBody requestBody = new RequestBody();
+        requestBody.setInterfaceName(interfaceName);
+        requestBody.setMethod(method);
+        requestBody.setParameter(parameter);
+        requestBody.setParameterTypesString(parameterTypesString);
 
         RpcFuture future = new RpcFuture();
 //        RpcRequestHolder.put(String.valueOf(request.getId()),future);

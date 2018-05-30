@@ -32,7 +32,7 @@ public class HelloController {
     private static Integer pos = 0;
 
     @RequestMapping(value = "")
-    public Object invoke(@RequestParam("interface") String interfaceName,
+    public Object invoke(@RequestParam("interfaceName") String interfaceName,
                          @RequestParam("method") String method,
                          @RequestParam("parameterTypesString") String parameterTypesString,
                          @RequestParam("parameter") String parameter) throws Exception {
