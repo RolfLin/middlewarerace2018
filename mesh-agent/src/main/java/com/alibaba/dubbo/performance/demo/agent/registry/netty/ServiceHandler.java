@@ -3,8 +3,10 @@ package com.alibaba.dubbo.performance.demo.agent.registry.netty;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcFuture;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcRequestHolder;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcResponse;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.CharsetUtil;
 import okhttp3.FormBody;
 import okhttp3.RequestBody;
 import org.slf4j.Logger;
@@ -17,6 +19,8 @@ public class ServiceHandler extends SimpleChannelInboundHandler<RpcResponse> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         logger.info("Netty rocks!");
+        ctx.writeAndFlush(Unpooled.copiedBuffer("Netty rocks!",
+                CharsetUtil.UTF_8));
 //        RequestBody requestBody = new FormBody.Builder()
 //                .add("interface",interfaceName)
 //                .add("method",method)

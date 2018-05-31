@@ -4,8 +4,10 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
+import com.alibaba.dubbo.performance.demo.agent.registry.netty.ConsumerClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.netty.NettyClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.netty.ProviderServerHandler;
+import com.alibaba.dubbo.performance.demo.agent.registry.netty.ProviderService;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -35,7 +37,6 @@ public class HelloController {
     private IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
 //      private IRegistry registry = new EtcdRegistry("http://10.21.25.133:8080");
     private RpcClient rpcClient = new RpcClient(registry);
-    private NettyClient nettyClient = new NettyClient(registry);
     private Random random = new Random();
     private List<Endpoint> endpoints = null;
     private Object lock = new Object();
@@ -53,6 +54,7 @@ public class HelloController {
             return consumer(interfaceName, method, parameterTypesString, parameter);
         } else if ("provider".equals(type)) {
 //            start();
+            new ProviderService().start();
             logger.info("connection success!");
             return provider(interfaceName, method, parameterTypesString, parameter);
 //            return 0;
@@ -81,12 +83,15 @@ public class HelloController {
 //        Endpoint endpoint = getEndPoint(endpoints);
         Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
 
+
         //netty
-        Object result = nettyClient.invoke(interfaceName,method,parameterTypesString,parameter,endpoint.getHost(), endpoint.getPort());
-        logger.info(result.toString());
-        String s = new String((byte[]) result);
-        logger.info(s);
-        return Integer.valueOf(s);
+        new ConsumerClient(endpoint.getHost(), endpoint.getPort()).start(interfaceName,method,parameterTypesString,parameter);
+        return 0;
+//        Object result = nettyClient.invoke(interfaceName,method,parameterTypesString,parameter,endpoint.getHost(), endpoint.getPort());
+//        logger.info(result.toString());
+//        String s = new String((byte[]) result);
+//        logger.info(s);
+//        return Integer.valueOf(s);
 //        String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
 //
 //        RequestBody requestBody = new FormBody.Builder()
