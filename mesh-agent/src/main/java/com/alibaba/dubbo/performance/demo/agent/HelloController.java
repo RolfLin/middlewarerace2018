@@ -41,6 +41,7 @@ public class HelloController {
             return consumer(interfaceName,method,parameterTypesString,parameter);
         }
         else if ("provider".equals(type)){
+            logger.info("connection succes!");
             return provider(interfaceName,method,parameterTypesString,parameter);
         }else {
             return "Environment variable type is needed to set to provider or consumer.";
