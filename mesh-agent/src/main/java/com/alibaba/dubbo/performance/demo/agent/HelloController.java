@@ -55,7 +55,7 @@ public class HelloController {
     }
 
     public Integer consumer(String interfaceName,String method,String parameterTypesString,String parameter) throws Exception {
-
+        logger.info("consumer agent!");
         if (null == endpoints){
             synchronized (lock){
                 if (null == endpoints){
@@ -88,7 +88,6 @@ public class HelloController {
                 .post(requestBody)
                 .build();
 
-        logger.info(request.toString());
         try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
             byte[] bytes = response.body().bytes();
