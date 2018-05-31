@@ -33,14 +33,14 @@ public class HelloController {
     private Logger logger = LoggerFactory.getLogger(HelloController.class);
 
     private IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
-
+//      private IRegistry registry = new EtcdRegistry("http://10.21.25.133:8080");
     private RpcClient rpcClient = new RpcClient(registry);
     private NettyClient nettyClient = new NettyClient(registry);
     private Random random = new Random();
     private List<Endpoint> endpoints = null;
     private Object lock = new Object();
     private OkHttpClient httpClient = new OkHttpClient();
-    private static Integer providerPort = 30000;
+
 
     @RequestMapping(value = "")
     public Object invoke(@RequestParam(value = "interface",required = false) String interfaceName,
@@ -48,13 +48,14 @@ public class HelloController {
                          @RequestParam(value = "parameterTypesString", required = false) String parameterTypesString,
                          @RequestParam(value = "parameter", required = false) String parameter) throws Exception {
         String type = System.getProperty("type");   // 获取type参数
+//        System.out.println("ssss");
         if ("consumer".equals(type)) {
             return consumer(interfaceName, method, parameterTypesString, parameter);
         } else if ("provider".equals(type)) {
-            start();
+//            start();
             logger.info("connection success!");
-//            return provider(interfaceName, method, parameterTypesString, parameter);
-            return 0;
+            return provider(interfaceName, method, parameterTypesString, parameter);
+//            return 0;
         } else {
             return "Environment variable type is needed to set to provider or consumer.";
         }
@@ -109,26 +110,6 @@ public class HelloController {
 //        }
 
 
-    }
-    public void start() throws InterruptedException {
-        final ProviderServerHandler serverHandler = new ProviderServerHandler();
-        EventLoopGroup group = new NioEventLoopGroup();
-        try {
-            ServerBootstrap b = new ServerBootstrap();
-            b.group(group)
-                    .channel(NioServerSocketChannel.class)
-                    .localAddress(providerPort)
-                    .childHandler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(serverHandler);
-                        }
-                    });
-            ChannelFuture f = b.bind().sync();
-            f.channel().closeFuture().sync();
-        }finally {
-            group.shutdownGracefully().sync();
-        }
     }
 
     //RoundRobin

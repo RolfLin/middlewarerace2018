@@ -1,5 +1,18 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
+import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
+import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
+import com.alibaba.dubbo.performance.demo.agent.registry.netty.ProviderServerHandler;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -9,8 +22,46 @@ public class AgentApp {
     // 在Provider端启动agent时，添加JVM参数-Dtype=provider -Dserver.port=30000 -Ddubbo.protocol.port=20889
     // 在Consumer端启动agent时，添加JVM参数-Dtype=consumer -Dserver.port=20000
     // 添加日志保存目录: -Dlogs.dir=/path/to/your/logs/dir。请安装自己的环境来设置日志目录。
-
-    public static void main(String[] args) {
-        SpringApplication.run(AgentApp.class,args);
+    private static IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
+    private static Logger logger = LoggerFactory.getLogger(AgentApp.class);
+    private static RpcClient rpcClient = new RpcClient(registry);
+    private static Integer providerPort = 30000;
+    public static void main(String[] args) throws InterruptedException {
+        String type = System.getProperty("type");
+        if ("provider".equals(type)) {
+            logger.info("connection success!");
+            start();
+//            return provider(interfaceName, method, parameterTypesString, parameter);
+        } else {
+            SpringApplication.run(AgentApp.class,args);
+        }
     }
+
+    public static byte[] provider(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
+
+        Object result = rpcClient.invoke(interfaceName, method, parameterTypesString, parameter);
+        return (byte[]) result;
+    }
+
+    public static void start() throws InterruptedException {
+        final ProviderServerHandler serverHandler = new ProviderServerHandler();
+        EventLoopGroup group = new NioEventLoopGroup();
+        try {
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(group)
+                    .channel(NioServerSocketChannel.class)
+                    .localAddress(providerPort)
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel ch) throws Exception {
+                            ch.pipeline().addLast(serverHandler);
+                        }
+                    });
+            ChannelFuture f = b.bind().sync();
+            f.channel().closeFuture().sync();
+        }finally {
+            group.shutdownGracefully().sync();
+        }
+    }
+
 }

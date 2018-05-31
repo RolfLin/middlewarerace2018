@@ -7,10 +7,16 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import okhttp3.FormBody;
 import okhttp3.RequestBody;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServiceHandler extends SimpleChannelInboundHandler<RpcResponse> {
+
+    private Logger logger = LoggerFactory.getLogger(ServiceHandler.class);
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        logger.info("Netty rocks!");
 //        RequestBody requestBody = new FormBody.Builder()
 //                .add("interface",interfaceName)
 //                .add("method",method)
