@@ -5,12 +5,23 @@ import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.netty.NettyClient;
+import com.alibaba.dubbo.performance.demo.agent.registry.netty.ProviderServerHandler;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
+
 
 import java.io.IOException;
 import java.util.List;
@@ -20,7 +31,7 @@ import java.util.Random;
 public class HelloController {
 
     private Logger logger = LoggerFactory.getLogger(HelloController.class);
-    
+
     private IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
 
     private RpcClient rpcClient = new RpcClient(registry);
@@ -29,7 +40,7 @@ public class HelloController {
     private List<Endpoint> endpoints = null;
     private Object lock = new Object();
     private OkHttpClient httpClient = new OkHttpClient();
-    private static Integer pos = 0;
+    private static Integer providerPort = 30000;
 
     @RequestMapping(value = "")
     public Object invoke(@RequestParam("interface") String interfaceName,
@@ -37,28 +48,28 @@ public class HelloController {
                          @RequestParam("parameterTypesString") String parameterTypesString,
                          @RequestParam("parameter") String parameter) throws Exception {
         String type = System.getProperty("type");   // 获取type参数
-        if ("consumer".equals(type)){
-            return consumer(interfaceName,method,parameterTypesString,parameter);
-        }
-        else if ("provider".equals(type)){
-            logger.info("connection succes!");
-            return provider(interfaceName,method,parameterTypesString,parameter);
-        }else {
+        if ("consumer".equals(type)) {
+            return consumer(interfaceName, method, parameterTypesString, parameter);
+        } else if ("provider".equals(type)) {
+            start();
+            logger.info("connection success!");
+            return provider(interfaceName, method, parameterTypesString, parameter);
+        } else {
             return "Environment variable type is needed to set to provider or consumer.";
         }
     }
 
-    public byte[] provider(String interfaceName,String method,String parameterTypesString,String parameter) throws Exception {
+    public byte[] provider(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
 
-        Object result = rpcClient.invoke(interfaceName,method,parameterTypesString,parameter);
+        Object result = rpcClient.invoke(interfaceName, method, parameterTypesString, parameter);
         return (byte[]) result;
     }
 
-    public Integer consumer(String interfaceName,String method,String parameterTypesString,String parameter) throws Exception {
+    public Integer consumer(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
         logger.info("consumer agent!");
-        if (null == endpoints){
-            synchronized (lock){
-                if (null == endpoints){
+        if (null == endpoints) {
+            synchronized (lock) {
+                if (null == endpoints) {
                     endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
                 }
             }
@@ -95,6 +106,28 @@ public class HelloController {
 //            logger.info(s);
 //            return Integer.valueOf(s);
 //        }
+
+
+    }
+    public void start() throws InterruptedException {
+        final ProviderServerHandler serverHandler = new ProviderServerHandler();
+        EventLoopGroup group = new NioEventLoopGroup();
+        try {
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(group)
+                    .channel(NioServerSocketChannel.class)
+                    .localAddress(providerPort)
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel ch) throws Exception {
+                            ch.pipeline().addLast(serverHandler);
+                        }
+                    });
+            ChannelFuture f = b.bind().sync();
+            f.channel().closeFuture().sync();
+        }finally {
+            group.shutdownGracefully().sync();
+        }
     }
 
     //RoundRobin
@@ -108,6 +141,5 @@ public class HelloController {
 //            pos++;
 //        }
 //        return endpoint;
-//    }
 
 }
