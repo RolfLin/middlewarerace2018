@@ -69,32 +69,32 @@ public class HelloController {
         Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
 
         //netty
-//        Object result = nettyClient.invoke(interfaceName,method,parameterTypesString,parameter,endpoint.getHost(), endpoint.getPort());
-//        logger.info(result.toString());
-//        String s = new String((byte[]) result);
-//        logger.info(s);
-//        return Integer.valueOf(s);
-        String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
-
-        RequestBody requestBody = new FormBody.Builder()
-                .add("interface",interfaceName)
-                .add("method",method)
-                .add("parameterTypesString",parameterTypesString)
-                .add("parameter",parameter)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .build();
-
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-            byte[] bytes = response.body().bytes();
-            String s = new String(bytes);
-            logger.info(s);
-            return Integer.valueOf(s);
-        }
+        Object result = nettyClient.invoke(interfaceName,method,parameterTypesString,parameter,endpoint.getHost(), endpoint.getPort());
+        logger.info(result.toString());
+        String s = new String((byte[]) result);
+        logger.info(s);
+        return Integer.valueOf(s);
+//        String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
+//
+//        RequestBody requestBody = new FormBody.Builder()
+//                .add("interface",interfaceName)
+//                .add("method",method)
+//                .add("parameterTypesString",parameterTypesString)
+//                .add("parameter",parameter)
+//                .build();
+//
+//        Request request = new Request.Builder()
+//                .url(url)
+//                .post(requestBody)
+//                .build();
+//
+//        try (Response response = httpClient.newCall(request).execute()) {
+//            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+//            byte[] bytes = response.body().bytes();
+//            String s = new String(bytes);
+//            logger.info(s);
+//            return Integer.valueOf(s);
+//        }
     }
 
     //RoundRobin
