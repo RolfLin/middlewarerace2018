@@ -43,10 +43,10 @@ public class HelloController {
     private static Integer providerPort = 30000;
 
     @RequestMapping(value = "")
-    public Object invoke(@RequestParam("interface") String interfaceName,
-                         @RequestParam("method") String method,
-                         @RequestParam("parameterTypesString") String parameterTypesString,
-                         @RequestParam("parameter") String parameter) throws Exception {
+    public Object invoke(@RequestParam(value = "interface",required = false) String interfaceName,
+                         @RequestParam(value = "method", required = false) String method,
+                         @RequestParam(value = "parameterTypesString", required = false) String parameterTypesString,
+                         @RequestParam(value = "parameter", required = false) String parameter) throws Exception {
         String type = System.getProperty("type");   // 获取type参数
         if ("consumer".equals(type)) {
             return consumer(interfaceName, method, parameterTypesString, parameter);
