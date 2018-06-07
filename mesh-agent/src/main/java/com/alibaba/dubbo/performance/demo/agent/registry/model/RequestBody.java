@@ -8,6 +8,13 @@ public class RequestBody implements Serializable {
     private String parameter;
     private String interfaceName;
 
+    public RequestBody(String interfaceName, String method, String parameterTypesString, String parameter) {
+        this.method = method;
+        this.parameterTypesString = parameterTypesString;
+        this.parameter = parameter;
+        this.interfaceName = interfaceName;
+    }
+
     public void setInterfaceName(String interfaceName) {
         this.interfaceName = interfaceName;
     }

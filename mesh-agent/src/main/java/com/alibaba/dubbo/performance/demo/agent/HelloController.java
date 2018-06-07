@@ -5,27 +5,15 @@ import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.netty.ConsumerClient;
-import com.alibaba.dubbo.performance.demo.agent.registry.netty.NettyClient;
-import com.alibaba.dubbo.performance.demo.agent.registry.netty.ProviderServerHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.netty.ProviderService;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
 
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
@@ -42,23 +30,26 @@ public class HelloController {
     private Object lock = new Object();
     private OkHttpClient httpClient = new OkHttpClient();
 
+    static {
+        if ("provider".equals(System.getProperty("type"))) {
+            try {
+                new ProviderService().start();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @RequestMapping(value = "")
-    public Object invoke(@RequestParam(value = "interface",required = false) String interfaceName,
-                         @RequestParam(value = "method", required = false) String method,
-                         @RequestParam(value = "parameterTypesString", required = false) String parameterTypesString,
-                         @RequestParam(value = "parameter", required = false) String parameter) throws Exception {
+    public Object invoke(@RequestParam(value = "interface") String interfaceName,
+                         @RequestParam(value = "method") String method,
+                         @RequestParam(value = "parameterTypesString") String parameterTypesString,
+                         @RequestParam(value = "parameter") String parameter) throws Exception {
         String type = System.getProperty("type");   // 获取type参数
 //        System.out.println("ssss");
         if ("consumer".equals(type)) {
             return consumer(interfaceName, method, parameterTypesString, parameter);
-        } else if ("provider".equals(type)) {
-//            start();
-            new ProviderService().start();
-            logger.info("connection success!");
-            return provider(interfaceName, method, parameterTypesString, parameter);
-//            return 0;
-        } else {
+        }  else {
             return "Environment variable type is needed to set to provider or consumer.";
         }
     }
@@ -85,8 +76,9 @@ public class HelloController {
 
 
         //netty
-        new ConsumerClient(endpoint.getHost(), endpoint.getPort()).start(interfaceName,method,parameterTypesString,parameter);
-        return 0;
+        int result = (int) new ConsumerClient(endpoint.getHost(), endpoint.getPort()).start(interfaceName,method,parameterTypesString,parameter);
+        return result;
+
 //        Object result = nettyClient.invoke(interfaceName,method,parameterTypesString,parameter,endpoint.getHost(), endpoint.getPort());
 //        logger.info(result.toString());
 //        String s = new String((byte[]) result);

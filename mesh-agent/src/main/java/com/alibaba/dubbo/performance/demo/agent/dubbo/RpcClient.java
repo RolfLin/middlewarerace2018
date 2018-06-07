@@ -25,6 +25,9 @@ public class RpcClient {
         this.connectManager = new ConnecManager();
     }
 
+    public RpcClient() {
+    }
+
     public Object invoke(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
 
         Channel channel = connectManager.getChannel();

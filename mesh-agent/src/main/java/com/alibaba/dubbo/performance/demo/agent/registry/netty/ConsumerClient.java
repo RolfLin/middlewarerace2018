@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.registry.netty;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -13,6 +14,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.ExecutionException;
 
 public class ConsumerClient  {
     private final String host;
@@ -23,8 +25,9 @@ public class ConsumerClient  {
         this.port = port;
     }
 
-    public void start(String interfaceName, String method, String parameterTypesString, String parameter) throws InterruptedException {
+    public Object start(String interfaceName, String method, String parameterTypesString, String parameter) throws InterruptedException {
         EventLoopGroup group = new NioEventLoopGroup();
+        Object result = null;
         try {
             Bootstrap b = new Bootstrap();
             b.group(group)
@@ -36,13 +39,20 @@ public class ConsumerClient  {
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new ServiceHandler());
+                            ch.pipeline().addLast(new ClientHandler());
                         }
                     });
-            ChannelFuture f = b.bind().sync();
-            f.channel().closeFuture().sync();
-        }finally {
+            ChannelFuture chf = b.bind().sync();
+            String msg = interfaceName + "," + method + "," + parameterTypesString + "," + parameter;
+            chf.channel().writeAndFlush(Unpooled.copiedBuffer(msg.getBytes()));
+            result = chf.get();
+            chf.channel().closeFuture().sync();
+
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } finally {
             group.shutdownGracefully().sync();
         }
+        return result;
     }
 }

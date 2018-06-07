@@ -1,48 +1,36 @@
 package com.alibaba.dubbo.performance.demo.agent.registry.netty;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcFuture;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcRequestHolder;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcResponse;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.Request;
+import com.alibaba.dubbo.performance.demo.agent.registry.model.RequestBody;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.util.CharsetUtil;
-import okhttp3.FormBody;
-import okhttp3.RequestBody;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ServiceHandler extends SimpleChannelInboundHandler<RpcResponse> {
+public class ServiceHandler extends ChannelInboundHandlerAdapter {
 
     private Logger logger = LoggerFactory.getLogger(ServiceHandler.class);
+    private RpcClient rpcClient = new RpcClient();
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        logger.info("Netty rocks!");
-        ctx.writeAndFlush(Unpooled.copiedBuffer("Netty rocks!",
-                CharsetUtil.UTF_8));
-//        RequestBody requestBody = new FormBody.Builder()
-//                .add("interface",interfaceName)
-//                .add("method",method)
-//                .add("parameterTypesString",parameterTypesString)
-//                .add("parameter",parameter)
-//                .build();
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        ByteBuf buf = (ByteBuf) msg;
+        byte[] req = new byte[buf.readableBytes()];
+        buf.readBytes(req);
+        String body = new String(req, "utf-8");
+        logger.info("get message : {}", body);
 
-//        okhttp3.Request request = new okhttp3.Request.Builder()
-//                .url(url)
-//                .post(requestBody)
-//                .build();
+        String[] strs = body.split(",");
+        logger.info(strs.toString());
 
+        RequestBody reqBody = new RequestBody(strs[0], strs[1], strs[2], strs[3]);
 
-//        RpcFuture future = new RpcFuture();
+        Object result = rpcClient.invoke(reqBody.getInterfaceName(), reqBody.getMethod(), reqBody.getParameterTypesString()
+                , reqBody.getParameter());
 
-//        RpcRequestHolder.put(String.valueOf(request.getId()),future);
-
-//        ctx.writeAndFlush(requestBody);
-    }
-
-    @Override
-    protected void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
-        System.out.println(response.toString());
+        ctx.writeAndFlush(Unpooled.copiedBuffer((byte[]) result));
     }
 }
