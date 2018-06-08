@@ -76,7 +76,7 @@ public class HelloController {
 
 
         //netty
-        int result = (int) new ConsumerClient(endpoint.getHost(), endpoint.getPort()).start(interfaceName,method,parameterTypesString,parameter);
+        int result = (int) new ConsumerClient(endpoint.getHost(), 30000).start(interfaceName,method,parameterTypesString,parameter);
         return result;
 
 //        Object result = nettyClient.invoke(interfaceName,method,parameterTypesString,parameter,endpoint.getHost(), endpoint.getPort());

@@ -13,6 +13,9 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
         String body = new String(req, "utf-8");
         System.out.println("message from server : " + body);
-
+        FutureText future = RequestHolder.get("1");
+        if (future != null) {
+            future.done(body);
+        }
     }
 }

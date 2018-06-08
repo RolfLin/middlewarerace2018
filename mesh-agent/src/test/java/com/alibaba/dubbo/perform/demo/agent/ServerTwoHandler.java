@@ -8,8 +8,12 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ServerHandler extends ChannelInboundHandlerAdapter {
-    Logger logger = LoggerFactory.getLogger(ServerHandler.class);
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class ServerTwoHandler extends ChannelInboundHandlerAdapter {
+    Logger logger = LoggerFactory.getLogger(ServerTwoHandler.class);
+    AtomicInteger responseInt = new AtomicInteger(2);
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = (ByteBuf) msg;
@@ -19,18 +23,9 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
         System.out.println("get message : " + body);
         logger.info("get message : {}", body);
 
-        String response = "send message to client : " + body;
-        System.out.println(response);
-        FutureText future = RequestHolder.get(body);
-        if (future != null) {
-            future.done(body);
-        }
+        String response = String.valueOf(responseInt);
+        System.out.println("send message to client : " + response);
 
-
-//        new Thread(newService).start();
-//        response = response;
         ctx.writeAndFlush(Unpooled.copiedBuffer(response.getBytes()));
-   }
-
-
+    }
 }
