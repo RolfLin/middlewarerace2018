@@ -1,5 +1,10 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
+import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
+import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
+import com.alibaba.dubbo.performance.demo.agent.registry.netty.ProviderService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -10,19 +15,19 @@ public class AgentApp {
     // 在Consumer端启动agent时，添加JVM参数-Dtype=consumer -Dserver.port=20000
     // 添加日志保存目录: -Dlogs.dir=/path/to/your/logs/dir。请安装自己的环境来设置日志目录。
 //    private static IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
-//    private static Logger logger = LoggerFactory.getLogger(AgentApp.class);
+    private static Logger logger = LoggerFactory.getLogger(AgentApp.class);
 //    private static RpcClient rpcClient = new RpcClient(registry);
 //    private static Integer providerPort = 30000;
     public static void main(String[] args) throws InterruptedException {
-//        String type = System.getProperty("type");
-//        if ("provider".equals(type)) {
-//            logger.info("connection success!");
-//            start();
-////            return provider(interfaceName, method, parameterTypesString, parameter);
-//        } else {
-//            SpringApplication.run(AgentApp.class,args);
-        SpringApplication.run(AgentApp.class,args);
-
+        String type = System.getProperty("type");
+        if ("provider".equals(type)) {
+            logger.info("connection success!");
+            new EtcdRegistry(System.getProperty("etcd.url"));
+//            return provider(interfaceName, method, parameterTypesString, parameter);
+            new ProviderService().start();
+        } else {
+            SpringApplication.run(AgentApp.class, args);
+        }
     }
 
 //    public static byte[] provider(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {

@@ -30,16 +30,6 @@ public class HelloController {
     private Object lock = new Object();
     private OkHttpClient httpClient = new OkHttpClient();
 
-    static {
-        if ("provider".equals(System.getProperty("type"))) {
-            try {
-                new ProviderService().start();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     @RequestMapping(value = "")
     public Object invoke(@RequestParam(value = "interface") String interfaceName,
                          @RequestParam(value = "method") String method,
@@ -73,7 +63,6 @@ public class HelloController {
         // 简单的负载均衡，随机取一个
 //        Endpoint endpoint = getEndPoint(endpoints);
         Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
-
 
         //netty
         int result = (int) new ConsumerClient(endpoint.getHost(), 30000).start(interfaceName,method,parameterTypesString,parameter);
