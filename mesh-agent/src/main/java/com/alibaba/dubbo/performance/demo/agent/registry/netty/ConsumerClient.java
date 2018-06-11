@@ -47,6 +47,7 @@ public class ConsumerClient  {
             result = chf.get();
             chf.channel().closeFuture().sync();
 
+
         } catch (ExecutionException e) {
             e.printStackTrace();
         } finally {
