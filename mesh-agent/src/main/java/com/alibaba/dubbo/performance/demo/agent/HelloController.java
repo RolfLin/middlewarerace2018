@@ -31,10 +31,10 @@ public class HelloController {
     private OkHttpClient httpClient = new OkHttpClient();
 
     @RequestMapping(value = "")
-    public Object invoke(@RequestParam(value = "interface") String interfaceName,
-                         @RequestParam(value = "method") String method,
-                         @RequestParam(value = "parameterTypesString") String parameterTypesString,
-                         @RequestParam(value = "parameter") String parameter) throws Exception {
+    public Object invoke(@RequestParam("interface") String interfaceName,
+                         @RequestParam("method") String method,
+                         @RequestParam("parameterTypesString") String parameterTypesString,
+                         @RequestParam("parameter") String parameter) throws Exception {
         String type = System.getProperty("type");   // 获取type参数
 //        System.out.println("ssss");
         if ("consumer".equals(type)) {
