@@ -35,14 +35,13 @@ public class ConsumerClient  {
                     .option(ChannelOption.SO_KEEPALIVE, true)
                     .option(ChannelOption.TCP_NODELAY, true)
                     .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
-                    .remoteAddress(new InetSocketAddress(host, port))
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline().addLast(new ClientHandler());
                         }
                     });
-            ChannelFuture chf = b.bind().sync();
+            ChannelFuture chf = b.connect(host, port).sync();
             String msg = interfaceName + "," + method + "," + parameterTypesString + "," + parameter;
             chf.channel().writeAndFlush(Unpooled.copiedBuffer(msg.getBytes()));
             result = chf.get();
