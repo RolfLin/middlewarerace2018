@@ -63,9 +63,9 @@ public class HelloController {
         // 简单的负载均衡，随机取一个
 //        Endpoint endpoint = getEndPoint(endpoints);
         Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
-
+        logger.info("post : {}", endpoint.getPort());
         //netty
-        int result = (int) new ConsumerClient(endpoint.getHost(), 30000).start(interfaceName,method,parameterTypesString,parameter);
+        int result = (int) new ConsumerClient(endpoint.getHost(), endpoint.getPort()).start(interfaceName,method,parameterTypesString,parameter);
         return result;
 
 //        Object result = nettyClient.invoke(interfaceName,method,parameterTypesString,parameter,endpoint.getHost(), endpoint.getPort());

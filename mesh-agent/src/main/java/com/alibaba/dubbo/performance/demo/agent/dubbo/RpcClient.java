@@ -62,7 +62,6 @@ public class RpcClient {
         }catch (Exception e){
             e.printStackTrace();
         }
-        chf.addListener(ChannelFutureListener.CLOSE);
         return result;
 
     }
