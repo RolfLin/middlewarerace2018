@@ -21,10 +21,10 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
         String response = "send message to client : " + body;
         System.out.println(response);
-        FutureText future = RequestHolder.get(body);
-        if (future != null) {
-            future.done(body);
-        }
+//        FutureText future = RequestHolder.get(body);
+//        if (future != null) {
+//            future.done(body);
+//        }
 
 
 //        new Thread(newService).start();

@@ -29,15 +29,16 @@ public class Server {
                     @Override
                     protected void initChannel(SocketChannel sc) throws Exception {
                         sc.pipeline().addLast(new ServerHandler());
+                        sc.pipeline().addLast(new ServerTwoHandler());
                     }
                 });
 
         ChannelFuture chf = bootstrap.bind(8688).sync();
-        FutureText future = new FutureText();
-        RequestHolder.put("1", future);
-        new ClientTwo(8689).start();
+//        FutureText future = new FutureText();
+//        RequestHolder.put("1", future);
+
         chf.channel().closeFuture().sync();
-        System.out.println(future.get());
+//        System.out.println(future.get());
         bossGroup.shutdownGracefully();
         workGroup.shutdownGracefully();
     }

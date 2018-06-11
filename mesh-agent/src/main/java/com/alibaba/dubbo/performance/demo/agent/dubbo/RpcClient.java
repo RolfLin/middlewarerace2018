@@ -8,6 +8,7 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcRequestHolder;
 
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ public class RpcClient {
         RpcFuture future = new RpcFuture();
         RpcRequestHolder.put(String.valueOf(request.getId()),future);
 
-        channel.writeAndFlush(request);
+        ChannelFuture chf = channel.writeAndFlush(request);
 
         Object result = null;
         try {
@@ -61,6 +62,8 @@ public class RpcClient {
         }catch (Exception e){
             e.printStackTrace();
         }
+        chf.addListener(ChannelFutureListener.CLOSE);
         return result;
+
     }
 }
