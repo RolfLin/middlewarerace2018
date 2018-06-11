@@ -12,11 +12,14 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutionException;
 
 public class ConsumerClient  {
+    Logger logger = LoggerFactory.getLogger(ConsumerClient.class);
     private final String host;
     private final int port;
 
@@ -43,6 +46,7 @@ public class ConsumerClient  {
                     });
             ChannelFuture chf = b.connect(host, port).sync();
             String msg = interfaceName + "," + method + "," + parameterTypesString + "," + parameter;
+            logger.info("send message : {}", msg);
             chf.channel().writeAndFlush(Unpooled.copiedBuffer(msg.getBytes()));
             result = chf.get();
             chf.channel().closeFuture().sync();
