@@ -1,6 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent.registry.netty;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.Request;
+import com.alibaba.dubbo.performance.demo.agent.registry.model.RequestBody;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
