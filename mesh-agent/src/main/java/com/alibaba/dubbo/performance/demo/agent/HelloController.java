@@ -64,7 +64,6 @@ public class HelloController {
         // 简单的负载均衡，随机取一个
         Endpoint endpoint;
         int endpointsNum = random.nextInt(6);
-
         if(endpointsNum == 0){
             endpoint = endpoints.get(0);
         }
