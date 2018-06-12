@@ -72,7 +72,20 @@ public class HelloController {
         }
 
         // 简单的负载均衡，随机取一个
-        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
+        Endpoint endpoint;
+        int endpointsNum = random.nextInt(6);
+
+        if(endpointsNum == 0){
+            endpoint = endpoints.get(0);
+        }
+        else if(endpointsNum >= 1 && endpointsNum <= 3){
+            endpoint = endpoints.get(1);
+        }
+        else{
+            endpoint = endpoints.get(2);
+        }
+
+//        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
 
