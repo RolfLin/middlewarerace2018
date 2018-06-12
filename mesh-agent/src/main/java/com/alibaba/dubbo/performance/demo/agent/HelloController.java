@@ -4,8 +4,6 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
-import com.alibaba.dubbo.performance.demo.agent.registry.netty.ConsumerClient;
-import com.alibaba.dubbo.performance.demo.agent.registry.netty.ProviderService;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
