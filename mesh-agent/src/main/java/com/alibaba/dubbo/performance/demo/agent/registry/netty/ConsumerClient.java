@@ -62,6 +62,7 @@ public class ConsumerClient  {
         }
         logger.info("consumer result : {}", result);
 //        return result;
+
        return result;
     }
 }
