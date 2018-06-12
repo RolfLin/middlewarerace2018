@@ -1,7 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent.registry.netty;
 
+import com.alibaba.dubbo.performance.demo.agent.registry.ClientFuture;
+import com.alibaba.dubbo.performance.demo.agent.registry.ClientRequestHolder;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
@@ -10,15 +11,14 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ConsumerClient  {
+    private static AtomicLong atomicLong = new AtomicLong();
     Logger logger = LoggerFactory.getLogger(ConsumerClient.class);
     private final String host;
     private final int port;
@@ -45,19 +45,23 @@ public class ConsumerClient  {
                         }
                     });
             ChannelFuture chf = b.connect(host, port).sync();
-            String msg = interfaceName + "," + method + "," + parameterTypesString + "," + parameter;
-            logger.info("send message : {}", msg);
+            long requestId = atomicLong.getAndIncrement();
+            String msg = interfaceName + "," + method + "," + parameterTypesString + "," + parameter + "," + requestId;
+            logger.info("send message : {} , requestId : {}", msg, requestId);
+            ClientFuture future = new ClientFuture();
+            ClientRequestHolder.put(String.valueOf(requestId),future);
             chf.channel().writeAndFlush(Unpooled.copiedBuffer(msg.getBytes()));
-            result = chf.get();
-            chf.channel().closeFuture().sync();
 
+//            chf.channel().closeFuture().sync();
+            result = future.get();
 
-        } catch (ExecutionException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             group.shutdownGracefully().sync();
         }
         logger.info("consumer result : {}", result);
-        return result;
+//        return result;
+       return result;
     }
 }

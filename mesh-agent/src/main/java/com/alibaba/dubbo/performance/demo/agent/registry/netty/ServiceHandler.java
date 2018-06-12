@@ -25,13 +25,15 @@ public class ServiceHandler extends ChannelInboundHandlerAdapter {
 
         String[] strs = body.split(",");
         logger.info("split message : {}", strs.toString());
-        if (strs.length != 4) {
+        if (strs.length != 5) {
             return;
         }
         RequestBody reqBody = new RequestBody(strs[0], strs[1], strs[2], strs[3]);
 
         Object result = rpcClient.invoke(reqBody.getInterfaceName(), reqBody.getMethod(), reqBody.getParameterTypesString()
                 , reqBody.getParameter());
+
+        result = result + "/" + strs[4];
 
         ctx.writeAndFlush(Unpooled.copiedBuffer((byte[]) result));
     }
