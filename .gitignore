@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # maven ignore
 target/
 *.jar
@@ -28,3 +29,8 @@ target/
 # system ignore
 .DS_Store
 Thumbs.db
+=======
+.DS_Store
+
+bootstrap.conf
+>>>>>>> cfd1fe690a5f75e54bc691fa3d8a0cbe98c06aa0
