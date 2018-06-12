@@ -57,6 +57,7 @@ public class ConsumerClient  {
         } finally {
             group.shutdownGracefully().sync();
         }
+        logger.info("consumer result : {}", result);
         return result;
     }
 }

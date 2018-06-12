@@ -44,11 +44,11 @@ public class HelloController {
         }
     }
 
-    public byte[] provider(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
-
-        Object result = rpcClient.invoke(interfaceName, method, parameterTypesString, parameter);
-        return (byte[]) result;
-    }
+//    public byte[] provider(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
+//
+//        Object result = rpcClient.invoke(interfaceName, method, parameterTypesString, parameter);
+//        return (byte[]) result;
+//    }
 
     public Integer consumer(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
         logger.info("consumer agent!");
@@ -65,10 +65,13 @@ public class HelloController {
         Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
         logger.info("post : {}", endpoint.getPort());
         //netty
-        int result = (int) new ConsumerClient(endpoint.getHost(), endpoint.getPort()).start(interfaceName,method,parameterTypesString,parameter);
-        return result;
+        byte[] bytes = (byte[]) new ConsumerClient(endpoint.getHost(), endpoint.getPort()).start(interfaceName, method, parameterTypesString, parameter);
+        logger.info("return result : {}", bytes);
+        String s = new String(bytes);
+        logger.info("return result : {} , {}", bytes, s);
+        return Integer.valueOf(s);
 
-//        Object result = nettyClient.invoke(interfaceName,method,parameterTypesString,parameter,endpoint.getHost(), endpoint.getPort());
+//        Object result = nettyClient.invokgie(interfaceName,method,parameterTypesString,parameter,endpoint.getHost(), endpoint.getPort());
 //        logger.info(result.toString());
 //        String s = new String((byte[]) result);
 //        logger.info(s);
