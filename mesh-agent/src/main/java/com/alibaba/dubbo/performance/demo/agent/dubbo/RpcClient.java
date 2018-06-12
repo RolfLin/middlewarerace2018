@@ -28,6 +28,7 @@ public class RpcClient {
     }
 
     public RpcClient() {
+        this.connectManager = new ConnecManager();
     }
 
     public Object invoke(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
