@@ -20,7 +20,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         String body = new String(req, "utf-8");
         logger.info("get client message : {}", body);
 
-        String[] strs = body.split(",");
+        String[] strs = body.split("/");
         logger.info("split client message : {}, requestId : {}", strs[0], strs[1]);
         String requestId = strs[1];
         ClientFuture future = ClientRequestHolder.get(requestId);

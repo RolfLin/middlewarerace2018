@@ -33,8 +33,8 @@ public class ServiceHandler extends ChannelInboundHandlerAdapter {
         Object result = rpcClient.invoke(reqBody.getInterfaceName(), reqBody.getMethod(), reqBody.getParameterTypesString()
                 , reqBody.getParameter());
 
-        result = result + "/" + strs[4];
+        String resultStr = result.toString() + "/" + strs[4];
 
-        ctx.writeAndFlush(Unpooled.copiedBuffer((byte[]) result));
+        ctx.writeAndFlush(Unpooled.copiedBuffer((resultStr.getBytes())));
     }
 }
