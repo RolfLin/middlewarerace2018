@@ -24,8 +24,10 @@ public class ServiceHandler extends ChannelInboundHandlerAdapter {
         logger.info("get message : {}", body);
 
         String[] strs = body.split(",");
-        logger.info(strs.toString());
-
+        logger.info("split message : {}", strs.toString());
+        if (strs.length != 4) {
+            return;
+        }
         RequestBody reqBody = new RequestBody(strs[0], strs[1], strs[2], strs[3]);
 
         Object result = rpcClient.invoke(reqBody.getInterfaceName(), reqBody.getMethod(), reqBody.getParameterTypesString()

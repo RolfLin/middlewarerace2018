@@ -33,6 +33,7 @@ public class RpcClient {
 
     public Object invoke(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
 
+        logger.info("invoke send message : {} , {} , [], {}", method, interfaceName, parameterTypesString, parameter);
         Channel channel = connectManager.getChannel();
 
         RpcInvocation invocation = new RpcInvocation();
@@ -63,6 +64,7 @@ public class RpcClient {
         }catch (Exception e){
             e.printStackTrace();
         }
+        logger.info("return result : {}", result);
         return result;
 
     }
