@@ -19,15 +19,15 @@ public class AgentApp {
 //    private static RpcClient rpcClient = new RpcClient(registry);
 //    private static Integer providerPort = 30000;
     public static void main(String[] args) throws InterruptedException {
-        String type = System.getProperty("type");
-        if ("provider".equals(type)) {
-            logger.info("connection success!");
-            new EtcdRegistry(System.getProperty("etcd.url"));
-//            return provider(interfaceName, method, parameterTypesString, parameter);
-            new ProviderService().start();
-        } else {
+//        String type = System.getProperty("type");
+//        if ("provider".equals(type)) {
+//            logger.info("connection success!");
+//            new EtcdRegistry(System.getProperty("etcd.url"));
+////            return provider(interfaceName, method, parameterTypesString, parameter);
+//            new ProviderService().start();
+//        } else {
             SpringApplication.run(AgentApp.class, args);
-        }
+//        }
     }
 
 //    public static byte[] provider(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
