@@ -5,6 +5,7 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.Request;
 import com.alibaba.dubbo.performance.demo.agent.registry.model.RequestBody;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
@@ -30,11 +31,11 @@ public class ServiceHandler extends ChannelInboundHandlerAdapter {
         }
         RequestBody reqBody = new RequestBody(strs[0], strs[1], strs[2], strs[3]);
 
-        String result = (String) rpcClient.invoke(reqBody.getInterfaceName(), reqBody.getMethod(), reqBody.getParameterTypesString()
+        byte[] result = (byte[]) rpcClient.invoke(reqBody.getInterfaceName(), reqBody.getMethod(), reqBody.getParameterTypesString()
                 , reqBody.getParameter());
 
         String resultStr = new String(result) + "/" + strs[4];
 
-        ctx.writeAndFlush(Unpooled.copiedBuffer((resultStr.getBytes())));
+        ctx.writeAndFlush(Unpooled.copiedBuffer((resultStr.getBytes()))).addListener(ChannelFutureListener.CLOSE);
     }
 }
