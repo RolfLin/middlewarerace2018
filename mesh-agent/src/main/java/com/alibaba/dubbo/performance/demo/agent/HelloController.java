@@ -48,6 +48,7 @@ public class HelloController {
     public byte[] provider(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
 
         Object result = rpcClient.invoke(interfaceName, method, parameterTypesString, parameter);
+        logger.info("pa return : {}, {}", (byte[])result, result);
         return (byte[]) result;
     }
 
