@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 public class ConnecManager {
     Logger logger = LoggerFactory.getLogger(ConnecManager.class);
-    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
+    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(50);
 
     private Bootstrap bootstrap;
 

@@ -13,8 +13,8 @@ public class ProviderService {
     private static final int port = 30000;
 
     public static void start() throws InterruptedException {
-        EventLoopGroup bossGroup = new NioEventLoopGroup();
-        EventLoopGroup workGroup = new NioEventLoopGroup();
+        EventLoopGroup bossGroup = new NioEventLoopGroup(50);
+        EventLoopGroup workGroup = new NioEventLoopGroup(50);
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workGroup)
                 .channel(NioServerSocketChannel.class)
