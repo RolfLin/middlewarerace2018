@@ -64,6 +64,7 @@ public class RpcClient {
         }catch (Exception e){
             e.printStackTrace();
         }
+
         logger.info("return result : {}", result);
         return result;
 
