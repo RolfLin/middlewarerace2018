@@ -65,7 +65,7 @@ public class RpcClient {
             e.printStackTrace();
         }
 
-        logger.info("return result : {}", result);
+        logger.info("return result : {}", result.getClass());
         return result;
 
     }

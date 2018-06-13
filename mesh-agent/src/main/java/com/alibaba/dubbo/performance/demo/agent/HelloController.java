@@ -4,6 +4,7 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
+import com.alibaba.dubbo.performance.demo.agent.registry.netty.ConsumerClient;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +39,6 @@ public class HelloController {
 //        System.out.println("ssss");
         if ("consumer".equals(type)) {
             return consumer(interfaceName, method, parameterTypesString, parameter);
-        } else if ("provider".equals(type)){
-            return provider(interfaceName, method, parameterTypesString, parameter);
         } else {
             return "Environment variable type is needed to set to provider or consumer.";
         }
@@ -65,40 +64,38 @@ public class HelloController {
         // 简单的负载均衡，随机取一个
 //        Endpoint endpoint = getEndPoint(endpoints);
         Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
-//        logger.info("post : {}", endpoint.getPort());
-//        //netty
-//        byte[] bytes = (byte[]) new ConsumerClient(endpoint.getHost(), endpoint.getPort()).start(interfaceName, method, parameterTypesString, parameter);
-//        logger.info("return result : {}", bytes);
-//        String s = new String(bytes);
-//        logger.info("return result : {} , {}", bytes, s);
-//        return Integer.valueOf(s);
+        logger.info("post : {}", endpoint.getPort());
+        //netty
+        String s = (String) new ConsumerClient(endpoint.getHost(), endpoint.getPort()).start(interfaceName, method, parameterTypesString, parameter);
+        logger.info("return result : {} ", s);
+        return Integer.valueOf(s);
 
 //        Object result = nettyClient.invokgie(interfaceName,method,parameterTypesString,parameter,endpoint.getHost(), endpoint.getPort());
 //        logger.info(result.toString());
 //        String s = new String((byte[]) result);
 //        logger.info(s);
 //        return Integer.valueOf(s);
-        String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
-
-        RequestBody requestBody = new FormBody.Builder()
-                .add("interface",interfaceName)
-                .add("method",method)
-                .add("parameterTypesString",parameterTypesString)
-                .add("parameter",parameter)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .build();
-
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-            byte[] bytes = response.body().bytes();
-            String s = new String(bytes);
-            logger.info("responseBody" + response.body() + s + " " + bytes);
-            return Integer.valueOf(s);
-        }
+//        String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
+//
+//        RequestBody requestBody = new FormBody.Builder()
+//                .add("interface",interfaceName)
+//                .add("method",method)
+//                .add("parameterTypesString",parameterTypesString)
+//                .add("parameter",parameter)
+//                .build();
+//
+//        Request request = new Request.Builder()
+//                .url(url)
+//                .post(requestBody)
+//                .build();
+//
+//        try (Response response = httpClient.newCall(request).execute()) {
+//            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+//            byte[] bytes = response.body().bytes();
+//            String s = new String(bytes);
+//            logger.info("responseBody" + response.body() + s + " " + bytes);
+//            return Integer.valueOf(s);
+//        }
 
 
     }
