@@ -25,7 +25,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         String requestId = strs[1];
         ClientFuture future = ClientRequestHolder.get(requestId);
         if(null != future){
-            RpcRequestHolder.remove(requestId);
+            ClientRequestHolder.remove(requestId);
             future.done(strs[0]);
         }
     }
