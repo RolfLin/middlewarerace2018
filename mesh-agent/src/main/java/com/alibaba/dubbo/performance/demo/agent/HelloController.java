@@ -95,7 +95,7 @@ public class HelloController {
             if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
             byte[] bytes = response.body().bytes();
             String s = new String(bytes);
-            logger.info(s + " " + bytes);
+            logger.info("responseBody" + response.body() + s + " " + bytes);
             return Integer.valueOf(s);
         }
 
