@@ -1,6 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
+import com.alibaba.dubbo.performance.demo.agent.netty.EchoClient;
+import com.alibaba.dubbo.performance.demo.agent.netty.EchoServer;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
@@ -46,12 +48,14 @@ public class HelloController {
     }
 
     public byte[] provider(String interfaceName,String method,String parameterTypesString,String parameter) throws Exception {
-
+        // default by dubbo contact
+        // provider agent to provider
         Object result = rpcClient.invoke(interfaceName,method,parameterTypesString,parameter);
         return (byte[]) result;
     }
 
     public Integer consumer(String interfaceName,String method,String parameterTypesString,String parameter) throws Exception {
+        // default by http contact, spring bootstrap
 
         if (null == endpoints){
             synchronized (lock){
@@ -61,23 +65,26 @@ public class HelloController {
             }
         }
 
+        // take the endpoiunt by 1:2:3
+//        Endpoint endpoint;
+//        int endpointsNum = random.nextInt(6);
+//        if(endpointsNum == 0){
+//            endpoint = endpoints.get(2);
+//        }
+//        else if(endpointsNum >= 1 && endpointsNum <= 3){
+//            endpoint = endpoints.get(1);
+//        }
+//        else{
+//            endpoint = endpoints.get(0);
+//        }
+
         // 简单的负载均衡，随机取一个
-        Endpoint endpoint;
-        int endpointsNum = random.nextInt(6);
-        if(endpointsNum == 0){
-            endpoint = endpoints.get(2);
-        }
-        else if(endpointsNum >= 1 && endpointsNum <= 3){
-            endpoint = endpoints.get(1);
-        }
-        else{
-            endpoint = endpoints.get(0);
-        }
-
-//        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
-
+        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
+        System.out.println("current host : " + endpoint.getHost());
+        System.out.println("current port : " + endpoint.getPort());
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
 
+        //consumer agent to consumer
         RequestBody requestBody = new FormBody.Builder()
                 .add("interface",interfaceName)
                 .add("method",method)
@@ -89,6 +96,9 @@ public class HelloController {
                 .url(url)
                 .post(requestBody)
                 .build();
+
+//        int result = new EchoClient(endpoint.getHost(), endpoint.getPort()).start();
+//        return result;
 
         try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);

@@ -57,6 +57,9 @@ public class RpcClient {
         }catch (Exception e){
             e.printStackTrace();
         }
+        logger.info("class of result : " + String.valueOf(result.getClass()));
+        logger.info("result : " + result);
+        logger.info("string of result : " + result.toString());
         return result;
     }
 }
