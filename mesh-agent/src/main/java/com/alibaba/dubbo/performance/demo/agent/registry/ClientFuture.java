@@ -31,7 +31,7 @@ public class ClientFuture implements Future<Object> {
          //boolean b = latch.await(100, TimeUnit.MICROSECONDS);
         latch.await();
         try {
-            return response.getBytes();
+            return response;
         }catch (Exception e){
             e.printStackTrace();
         }
