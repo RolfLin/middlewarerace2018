@@ -81,9 +81,7 @@ public class HelloController {
         // 简单的负载均衡，随机取一个
         int pointNum = random.nextInt(endpoints.size());
         Endpoint endpoint = endpoints.get(pointNum);
-        logger.info("current point : " + pointNum);
-        logger.info("current host : " + endpoint.getHost());
-        logger.info("current port : " + endpoint.getPort());
+        logger.info("current point : " + pointNum + ", current host : " + endpoint.getHost());
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
 
         //consumer agent to consumer
