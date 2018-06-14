@@ -68,7 +68,7 @@ public class HelloController {
         // take the endpoiunt by 1:2:3
 //        Endpoint endpoint;
 //        int endpointsNum = random.nextInt(6);
-//        if(endpointsNum == 0){
+//        if(endpoint.getHost().equals("10.10.10.5")){
 //            endpoint = endpoints.get(2);
 //        }
 //        else if(endpointsNum >= 1 && endpointsNum <= 3){
@@ -79,7 +79,9 @@ public class HelloController {
 //        }
 
         // 简单的负载均衡，随机取一个
-        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
+        int pointNum = random.nextInt(endpoints.size());
+        Endpoint endpoint = endpoints.get(pointNum);
+        System.out.println("current point : " + pointNum);
         System.out.println("current host : " + endpoint.getHost());
         System.out.println("current port : " + endpoint.getPort());
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
