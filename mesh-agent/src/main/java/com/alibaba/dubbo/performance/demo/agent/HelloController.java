@@ -29,6 +29,7 @@ public class HelloController {
     private List<Endpoint> endpoints = null;
     private Object lock = new Object();
     private OkHttpClient httpClient = new OkHttpClient();
+    private static int pointNum = 0;
 
 
     @RequestMapping(value = "")
@@ -65,23 +66,49 @@ public class HelloController {
             }
         }
 
+
+        Endpoint endpoint;
+
+        if(pointNum == 0){
+            endpoint = endpoints.get(0);
+        }
+        else if(pointNum >= 1 && pointNum <= 2){
+            endpoint = endpoints.get(1);
+        }
+        else{
+            endpoint = endpoints.get(2);
+        }
+
+        if(pointNum >= 5){
+            pointNum = 0;
+        }
+        else{
+            pointNum++;
+        }
+        logger.info("current point : " + pointNum + ", current host : " + endpoint.getHost());
+
         // take the endpoiunt by 1:2:3
 //        Endpoint endpoint;
-//        int endpointsNum = random.nextInt(6);
-//        if(endpoint.getHost().equals("10.10.10.5")){
-//            endpoint = endpoints.get(2);
+//        int pointNum;
+//        int endpointsSeed = random.nextInt(6);
+//        if(endpointsSeed == 0){
+//            pointNum = 0;
+//            endpoint = endpoints.get(pointNum);
 //        }
-//        else if(endpointsNum >= 1 && endpointsNum <= 3){
-//            endpoint = endpoints.get(1);
+//        else if(endpointsSeed >= 1 && endpointsSeed <= 2){
+//            pointNum = 1;
+//            endpoint = endpoints.get(pointNum);
 //        }
 //        else{
-//            endpoint = endpoints.get(0);
+//            pointNum = 2;
+//            endpoint = endpoints.get(pointNum);
 //        }
+        logger.info("current point : " + pointNum + ", current host : " + endpoint.getHost());
 
         // 简单的负载均衡，随机取一个
-        int pointNum = random.nextInt(endpoints.size());
-        Endpoint endpoint = endpoints.get(pointNum);
-        logger.info("current point : " + pointNum + ", current host : " + endpoint.getHost());
+//        int pointNum = random.nextInt(endpoints.size());
+//        Endpoint endpoint = endpoints.get(pointNum);
+//        logger.info("current point : " + pointNum + ", current host : " + endpoint.getHost());
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
 
         //consumer agent to consumer
