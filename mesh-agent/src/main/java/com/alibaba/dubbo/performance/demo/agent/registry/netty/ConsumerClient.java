@@ -22,6 +22,7 @@ public class ConsumerClient  {
     Logger logger = LoggerFactory.getLogger(ConsumerClient.class);
     private final String host;
     private final int port;
+    private static EventLoopGroup group = new NioEventLoopGroup();
 
     public ConsumerClient(String host, int port) {
         this.host = host;
@@ -29,7 +30,7 @@ public class ConsumerClient  {
     }
 
     public Object start(String interfaceName, String method, String parameterTypesString, String parameter) throws InterruptedException {
-        EventLoopGroup group = new NioEventLoopGroup(4);
+//        EventLoopGroup group = new NioEventLoopGroup(4);
         Object result = null;
         try {
             Bootstrap b = new Bootstrap();
