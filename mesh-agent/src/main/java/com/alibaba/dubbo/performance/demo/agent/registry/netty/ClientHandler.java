@@ -28,6 +28,13 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             ClientRequestHolder.remove(requestId);
             future.done(strs[0]);
         }
-        ctx.channel().close();
+//        ctx.channel().close();
+        buf.release();
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        cause.printStackTrace();
+        ctx.close();
     }
 }
