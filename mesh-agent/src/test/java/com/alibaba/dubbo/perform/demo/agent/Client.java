@@ -19,7 +19,21 @@ public class Client {
     }
 
     public static void main(String[] args) throws InterruptedException {
-       new Client(8688).start();
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    new Client(8688).start();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        for (int i = 0; i < 10000; i++) {
+            new Thread(runnable).start();
+        }
     }
 
     public void start() throws InterruptedException {

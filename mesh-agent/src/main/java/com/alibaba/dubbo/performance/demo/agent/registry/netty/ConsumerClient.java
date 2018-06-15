@@ -29,13 +29,13 @@ public class ConsumerClient  {
     }
 
     public Object start(String interfaceName, String method, String parameterTypesString, String parameter) throws InterruptedException {
-        EventLoopGroup group = new NioEventLoopGroup(50);
+        EventLoopGroup group = new NioEventLoopGroup(4);
         Object result = null;
         try {
             Bootstrap b = new Bootstrap();
             b.group(group)
                     .channel(NioSocketChannel.class)
-                    .option(ChannelOption.SO_KEEPALIVE, true)
+                    .option(ChannelOption.SO_KEEPALIVE, false)
                     .option(ChannelOption.TCP_NODELAY, true)
                     .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                     .handler(new ChannelInitializer<SocketChannel>() {
