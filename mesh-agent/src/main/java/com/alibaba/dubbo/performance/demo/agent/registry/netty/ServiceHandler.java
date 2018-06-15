@@ -35,6 +35,7 @@ public class ServiceHandler extends ChannelInboundHandlerAdapter {
                 , reqBody.getParameter());
 
         String resultStr = new String(result) + "/" + strs[4];
+        logger.info("return ProviderHandler result : {}", resultStr);
 
         ctx.writeAndFlush(Unpooled.copiedBuffer((resultStr.getBytes()))).addListener(ChannelFutureListener.CLOSE);
     }
