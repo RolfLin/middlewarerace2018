@@ -59,7 +59,7 @@ public class ConsumerClient  {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            group.shutdownGracefully().sync();
+            group.shutdownGracefully();
         }
         logger.info("consumer result : {}", result);
 //        return result;
