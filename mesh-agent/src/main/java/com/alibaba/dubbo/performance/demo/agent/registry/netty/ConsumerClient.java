@@ -36,9 +36,9 @@ public class ConsumerClient  {
             Bootstrap b = new Bootstrap();
             b.group(group)
                     .channel(NioSocketChannel.class)
-                    .option(ChannelOption.SO_KEEPALIVE, false)
-                    .option(ChannelOption.TCP_NODELAY, true)
-                    .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
+//                    .option(ChannelOption.SO_KEEPALIVE, false)
+//                    .option(ChannelOption.TCP_NODELAY, true)
+//                    .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
@@ -53,7 +53,7 @@ public class ConsumerClient  {
             ClientRequestHolder.put(String.valueOf(requestId),future);
             chf.channel().writeAndFlush(Unpooled.copiedBuffer(msg.getBytes()));
 
-            chf.channel().closeFuture().sync();
+            chf.channel().closeFuture();
             result = future.get();
 
         } catch (Exception e) {
