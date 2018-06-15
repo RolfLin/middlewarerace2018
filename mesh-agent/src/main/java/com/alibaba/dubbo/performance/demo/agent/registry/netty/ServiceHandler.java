@@ -37,6 +37,18 @@ public class ServiceHandler extends ChannelInboundHandlerAdapter {
         String resultStr = new String(result) + "/" + strs[4];
         logger.info("return ProviderHandler result : {}", resultStr);
 
-        ctx.writeAndFlush(Unpooled.copiedBuffer((resultStr.getBytes()))).addListener(ChannelFutureListener.CLOSE);
+        ctx.write(resultStr);
+//        ctx.writeAndFlush(Unpooled.copiedBuffer((resultStr.getBytes()))).addListener(ChannelFutureListener.CLOSE);
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
+        cause.printStackTrace();
+        ctx.close();
     }
 }

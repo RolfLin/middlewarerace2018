@@ -11,10 +11,10 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClientHandler extends SimpleChannelInboundHandler {
+public class ClientHandler extends ChannelInboundHandlerAdapter {
     private Logger logger = LoggerFactory.getLogger(ClientHandler.class);
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = (ByteBuf) msg;
         byte[] req = new byte[buf.readableBytes()];
         buf.readBytes(req);
@@ -29,7 +29,9 @@ public class ClientHandler extends SimpleChannelInboundHandler {
             ClientRequestHolder.remove(requestId);
             future.done(strs[0]);
         }
-//        ctx.channel().close();
+        buf.release();
+        ctx.close();
+        System.out.println("ClientHandler said :" + body);
     }
 
     @Override
