@@ -5,6 +5,7 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcRequestHolder;
 import com.alibaba.dubbo.performance.demo.agent.registry.ClientFuture;
 import com.alibaba.dubbo.performance.demo.agent.registry.ClientRequestHolder;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 //public class ClientHandler extends ChannelInboundHandlerAdapter {
+@ChannelHandler.Sharable
 public class ClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private Logger logger = LoggerFactory.getLogger(ClientHandler.class);
 
