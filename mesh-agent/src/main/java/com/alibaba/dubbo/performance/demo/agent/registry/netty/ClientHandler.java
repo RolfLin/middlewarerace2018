@@ -28,5 +28,6 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             ClientRequestHolder.remove(requestId);
             future.done(strs[0]);
         }
+        ctx.channel().close();
     }
 }
