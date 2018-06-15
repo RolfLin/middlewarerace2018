@@ -11,13 +11,17 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClientHandler extends ChannelInboundHandlerAdapter {
+//public class ClientHandler extends ChannelInboundHandlerAdapter {
+public class ClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private Logger logger = LoggerFactory.getLogger(ClientHandler.class);
+
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf buf = (ByteBuf) msg;
-        byte[] req = new byte[buf.readableBytes()];
-        buf.readBytes(req);
+    public void channelRead0(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
+//        ByteBuf buf = (ByteBuf) msg;
+//        byte[] req = new byte[buf.readableBytes()];
+        byte[] req = new byte[in.readableBytes()];
+
+        in.readBytes(req);
         String body = new String(req, "utf-8");
         logger.info("get client message : {}", body);
 
@@ -29,8 +33,8 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             ClientRequestHolder.remove(requestId);
             future.done(strs[0]);
         }
-        buf.release();
-        ctx.close();
+//        in.release();
+//        ctx.close();
         System.out.println("ClientHandler said :" + body);
     }
 
