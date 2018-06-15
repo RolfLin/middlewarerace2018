@@ -12,18 +12,19 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//public class ClientHandler extends ChannelInboundHandlerAdapter {
-@ChannelHandler.Sharable
-public class ClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
+public class ClientHandler extends ChannelInboundHandlerAdapter {
+//@ChannelHandler.Sharable
+//public class ClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private Logger logger = LoggerFactory.getLogger(ClientHandler.class);
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
-//        ByteBuf buf = (ByteBuf) msg;
-//        byte[] req = new byte[buf.readableBytes()];
-        byte[] req = new byte[in.readableBytes()];
+//    public void channelRead0(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        ByteBuf buf = (ByteBuf) msg;
+        byte[] req = new byte[buf.readableBytes()];
+//        byte[] req = new byte[in.readableBytes()];
 
-        in.readBytes(req);
+        buf.readBytes(req);
         String body = new String(req, "utf-8");
         logger.info("get client message : {}", body);
 

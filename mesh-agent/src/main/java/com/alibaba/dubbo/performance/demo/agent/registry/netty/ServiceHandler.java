@@ -12,7 +12,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@ChannelHandler.Sharable
+//@ChannelHandler.Sharable
 public class ServiceHandler extends ChannelInboundHandlerAdapter {
 
     private Logger logger = LoggerFactory.getLogger(ServiceHandler.class);
