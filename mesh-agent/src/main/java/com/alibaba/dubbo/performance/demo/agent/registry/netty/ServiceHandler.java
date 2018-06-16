@@ -40,6 +40,7 @@ public class ServiceHandler extends ChannelInboundHandlerAdapter {
         logger.info("return ProviderHandler result : {}", resultStr);
 
         ctx.writeAndFlush(Unpooled.copiedBuffer((resultStr.getBytes())));
+        buf.release();
 //        ctx.writeAndFlush(Unpooled.copiedBuffer((resultStr.getBytes()))).addListener(ChannelFutureListener.CLOSE);
     }
 
