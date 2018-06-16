@@ -22,7 +22,7 @@ public class ConsumerClient  {
     Logger logger = LoggerFactory.getLogger(ConsumerClient.class);
     private final String host;
     private final int port;
-    private static EventLoopGroup group = new NioEventLoopGroup();
+    private static EventLoopGroup group = new NioEventLoopGroup(4);
 
     public ConsumerClient(String host, int port) {
         this.host = host;
