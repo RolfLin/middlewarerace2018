@@ -25,10 +25,10 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
         buf.readBytes(req);
         String body = new String(req, "utf-8");
-        logger.info("get client message : {}", body);
+        logger.info("get server message : {}", body);
 
         String[] strs = body.split("/");
-        logger.info("split client message : {}, requestId : {}", strs[0], strs[1]);
+        logger.info("split server message : {}, requestId : {}", strs[0], strs[1]);
         String requestId = strs[1];
         ClientFuture future = ClientRequestHolder.get(requestId);
         if(null != future){
