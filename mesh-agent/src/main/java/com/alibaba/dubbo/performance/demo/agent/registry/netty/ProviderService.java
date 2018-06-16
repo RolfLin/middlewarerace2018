@@ -10,7 +10,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 public class ProviderService {
 
-    private static final int port = 30000;
+//    private static final int port = 30000;
+      private static int port = Integer.valueOf(System.getProperty("server.port"));
 //    private static EventLoopGroup bossGroup = new NioEventLoopGroup();
 //    private static EventLoopGroup workGroup = new NioEventLoopGroup();
 
