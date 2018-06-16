@@ -30,7 +30,7 @@ public class ConsumerClient  {
     }
 
     public Object start(String interfaceName, String method, String parameterTypesString, String parameter) throws InterruptedException {
-        EventLoopGroup group = new NioEventLoopGroup(4);
+        EventLoopGroup group = new NioEventLoopGroup();
         Object result = null;
         try {
             Bootstrap b = new Bootstrap();
