@@ -12,6 +12,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.websocket.Session;
+
 public class ClientHandler extends ChannelInboundHandlerAdapter {
 //@ChannelHandler.Sharable
 //public class ClientHandler extends SimpleChannelInboundHandler<ByteBuf> {

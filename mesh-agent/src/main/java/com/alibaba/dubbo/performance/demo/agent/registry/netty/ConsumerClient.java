@@ -36,16 +36,17 @@ public class ConsumerClient  {
             Bootstrap b = new Bootstrap();
             b.group(group)
                     .channel(NioSocketChannel.class)
-//                    .option(ChannelOption.SO_KEEPALIVE, false)
-//                    .option(ChannelOption.TCP_NODELAY, true)
-//                    .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
+                    .remoteAddress(host, port)
+                    .option(ChannelOption.SO_KEEPALIVE, false)
+                    .option(ChannelOption.TCP_NODELAY, true)
+                    .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline().addLast(new ClientHandler());
                         }
                     });
-            ChannelFuture chf = b.connect(host, port).sync();
+            ChannelFuture chf = b.connect().sync();
             long requestId = atomicLong.getAndIncrement();
             String msg = interfaceName + "," + method + "," + parameterTypesString + "," + parameter + "," + requestId;
             logger.info("send message : {} , requestId : {}", msg, requestId);
