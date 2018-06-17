@@ -28,16 +28,17 @@ public class ProviderService {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workGroup)
                 .channel(NioServerSocketChannel.class)
+                .option(ChannelOption.SO_REUSEADDR,true)
                 .option(ChannelOption.SO_BACKLOG, 128)
-                .option(ChannelOption.SO_KEEPALIVE, false)
+                .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .localAddress(new InetSocketAddress(port))
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,1000)
+//                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,3000)
                 .childOption(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel sc) throws Exception {
-                        sc.pipeline().addLast("idleStateHandler",new IdleStateHandler(2000,2000,2000, TimeUnit.MILLISECONDS));
+                        sc.pipeline().addLast("idleStateHandler",new IdleStateHandler(10,10,10, TimeUnit.MILLISECONDS));
                         sc.pipeline().addLast(new ServiceHandler());
                     }
                 });

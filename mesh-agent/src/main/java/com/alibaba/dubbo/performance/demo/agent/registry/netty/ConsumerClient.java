@@ -39,14 +39,14 @@ public class ConsumerClient  {
             b.group(group)
                     .channel(NioSocketChannel.class)
                     .remoteAddress(host, port)
-                    .option(ChannelOption.SO_KEEPALIVE, false)
+                    .option(ChannelOption.SO_KEEPALIVE, true)
                     .option(ChannelOption.TCP_NODELAY, true)
                     .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
-                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,1000)
+                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,3000)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast("idleStateHandler",new IdleStateHandler(2000,2000,2000, TimeUnit.MILLISECONDS));
+                            ch.pipeline().addLast("idleStateHandler",new IdleStateHandler(10,10,10, TimeUnit.MILLISECONDS));
                             ch.pipeline().addLast(new ClientHandler());
                         }
                     });
