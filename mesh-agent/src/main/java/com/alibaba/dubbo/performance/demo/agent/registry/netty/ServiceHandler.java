@@ -41,17 +41,20 @@ public class ServiceHandler extends ChannelInboundHandlerAdapter {
 
         ctx.writeAndFlush(Unpooled.copiedBuffer((resultStr.getBytes())));
         buf.release();
+        ctx.channel().close();
 //        ctx.writeAndFlush(Unpooled.copiedBuffer((resultStr.getBytes()))).addListener(ChannelFutureListener.CLOSE);
     }
 
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
-    }
+//    @Override
+//    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+//        logger.info("ServerHandler exception !");
+//        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+//    }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
         cause.printStackTrace();
+        logger.info("ServerHandler exception !");
         ctx.close();
     }
 }

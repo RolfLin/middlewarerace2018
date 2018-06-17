@@ -41,11 +41,13 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 //        ctx.close();
         buf.release();
         logger.info("ClientHandler said :" + body);
+        ctx.channel().close();
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
+        logger.info("ClientHandler exception !");
         ctx.close();
     }
 }

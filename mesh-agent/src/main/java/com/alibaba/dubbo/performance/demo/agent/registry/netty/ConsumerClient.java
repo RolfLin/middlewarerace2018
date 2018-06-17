@@ -58,7 +58,7 @@ public class ConsumerClient  {
             ClientRequestHolder.put(String.valueOf(requestId),future);
             chf.channel().writeAndFlush(Unpooled.copiedBuffer(msg.getBytes()));
 
-            chf.channel().closeFuture().sync();
+//            chf.channel().closeFuture().sync();
             result = future.get();
 
         } catch (Exception e) {
