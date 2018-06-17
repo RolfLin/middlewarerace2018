@@ -48,7 +48,7 @@ public class ProviderService {
 
         chf.channel().closeFuture().sync();
 
-        bossGroup.shutdownGracefully();
-        workGroup.shutdownGracefully();
+        bossGroup.shutdownGracefully().sync();
+        workGroup.shutdownGracefully().sync();
     }
 }
