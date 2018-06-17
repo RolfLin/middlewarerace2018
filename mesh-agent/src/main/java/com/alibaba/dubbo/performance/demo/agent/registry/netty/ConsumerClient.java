@@ -53,7 +53,7 @@ public class ConsumerClient  {
             ChannelFuture chf = b.connect().sync();
             long requestId = atomicLong.getAndIncrement();
             String msg = interfaceName + "," + method + "," + parameterTypesString + "," + parameter + "," + requestId;
-            logger.info("send message : {} , requestId : {}", msg, requestId);
+            logger.info("send message : {}, requestId : {}", msg, requestId);
             ClientFuture future = new ClientFuture();
             ClientRequestHolder.put(String.valueOf(requestId),future);
             chf.channel().writeAndFlush(Unpooled.copiedBuffer(msg.getBytes()));
