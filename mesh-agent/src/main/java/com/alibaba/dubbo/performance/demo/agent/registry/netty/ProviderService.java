@@ -23,7 +23,7 @@ public class ProviderService {
 
 //    private static final int port = 30000;
       private static int port = Integer.valueOf(System.getProperty("server.port"));
-      private static String DELIMITER = "|";
+      private static String DELIMITER = "#";
 //    private static EventLoopGroup bossGroup = new NioEventLoopGroup();
 //    private static EventLoopGroup workGroup = new NioEventLoopGroup();
 
@@ -46,9 +46,9 @@ public class ProviderService {
                     @Override
                     protected void initChannel(SocketChannel sc) throws Exception {
 //                        sc.pipeline().addLast("idleStateHandler",new IdleStateHandler(500,500,500, TimeUnit.MILLISECONDS));
-//                        sc.pipeline().addLast(new DelimiterBasedFrameDecoder(2048, Unpooled.copiedBuffer(DELIMITER.getBytes())));
+                        sc.pipeline().addLast(new DelimiterBasedFrameDecoder(2048, Unpooled.copiedBuffer(DELIMITER.getBytes())));
 //                        sc.pipeline().addLast(new LineBasedFrameDecoder(1024));
-                        sc.pipeline().addLast(new FixedLengthFrameDecoder(2048));
+//                        sc.pipeline().addLast(new FixedLengthFrameDecoder(1<<5));
                         sc.pipeline().addLast(new ServiceHandler());
                     }
                 });

@@ -16,6 +16,7 @@ public class Text {
         System.out.println(s);
         System.out.println(i);
         logger.info("{}", s);
-
+        int testLength = 1<<11;
+        System.out.println(testLength);
     }
 }
