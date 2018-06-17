@@ -40,7 +40,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 //        in.release();
 //        ctx.close();
         buf.release();
-        System.out.println("ClientHandler said :" + body);
+        logger.info("ClientHandler said :" + body);
     }
 
     @Override

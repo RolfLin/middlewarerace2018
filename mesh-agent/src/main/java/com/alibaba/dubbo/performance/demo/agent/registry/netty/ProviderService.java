@@ -11,6 +11,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
+import java.net.InetSocketAddress;
+
 public class ProviderService {
 
 //    private static final int port = 30000;
@@ -27,6 +29,7 @@ public class ProviderService {
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .option(ChannelOption.SO_KEEPALIVE, false)
                 .option(ChannelOption.TCP_NODELAY, true)
+                .localAddress(new InetSocketAddress(port))
                 .childOption(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -35,11 +38,11 @@ public class ProviderService {
                     }
                 });
 
-        ChannelFuture chf = bootstrap.bind(port).sync();
+        ChannelFuture chf = bootstrap.bind().sync();
 
         chf.channel().closeFuture().sync();
 
-        bossGroup.shutdownGracefully();
-        workGroup.shutdownGracefully();
+        bossGroup.shutdownGracefully().sync();
+        workGroup.shutdownGracefully().sync();
     }
 }

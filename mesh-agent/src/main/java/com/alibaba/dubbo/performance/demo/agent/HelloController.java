@@ -64,7 +64,7 @@ public class HelloController {
         // 简单的负载均衡，随机取一个
 //        Endpoint endpoint = getEndPoint(endpoints);
         Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
-        logger.info("post : {}", endpoint.getPort());
+        logger.info("provider agent port : {}", endpoint.getPort());
         //netty
         String s = (String) new ConsumerClient(endpoint.getHost(), endpoint.getPort()).start(interfaceName, method, parameterTypesString, parameter);
         logger.info("return result : {} ", s);
