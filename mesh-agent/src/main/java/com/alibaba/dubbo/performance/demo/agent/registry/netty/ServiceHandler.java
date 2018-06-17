@@ -9,6 +9,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.LineBasedFrameDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +26,10 @@ public class ServiceHandler extends ChannelInboundHandlerAdapter {
         buf.readBytes(req);
         String body = new String(req, "utf-8");
         logger.info("get client message : {}", body);
+        logger.info("client message length : {}", body.length());
 
         String[] strs = body.split(",");
-        logger.info("split client message : {}", strs.toString());
+//        logger.info("split client message : {}", strs.toString());
 //        if (strs.length != 5) {
 //            return;
 //        }

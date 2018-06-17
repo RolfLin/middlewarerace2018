@@ -12,6 +12,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.LineBasedFrameDecoder;
+import io.netty.handler.codec.string.LineEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ConsumerClient  {
     private static AtomicLong atomicLong = new AtomicLong();
     Logger logger = LoggerFactory.getLogger(ConsumerClient.class);
+    private static String DELIMITER = "|";
     private final String host;
     private final int port;
 //    private static EventLoopGroup group = new NioEventLoopGroup(4);
@@ -47,12 +51,13 @@ public class ConsumerClient  {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
 //                            ch.pipeline().addLast("idleStateHandler",new IdleStateHandler(500,500,500, TimeUnit.MILLISECONDS));
+//                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(1024, Unpooled.copiedBuffer(delimiter.getBytes())));
                             ch.pipeline().addLast(new ClientHandler());
                         }
                     });
             ChannelFuture chf = b.connect().sync();
             long requestId = atomicLong.getAndIncrement();
-            String msg = interfaceName + "," + method + "," + parameterTypesString + "," + parameter + "," + requestId;
+            String msg = interfaceName + "," + method + "," + parameterTypesString + "," + parameter + "," + requestId + "|";
             logger.info("send message : {}, requestId : {}", msg, requestId);
             ClientFuture future = new ClientFuture();
             ClientRequestHolder.put(String.valueOf(requestId),future);
