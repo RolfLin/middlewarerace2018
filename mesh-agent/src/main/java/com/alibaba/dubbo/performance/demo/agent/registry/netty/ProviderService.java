@@ -12,6 +12,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.FixedLengthFrameDecoder;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.timeout.IdleStateHandler;
 
@@ -45,8 +46,9 @@ public class ProviderService {
                     @Override
                     protected void initChannel(SocketChannel sc) throws Exception {
 //                        sc.pipeline().addLast("idleStateHandler",new IdleStateHandler(500,500,500, TimeUnit.MILLISECONDS));
-                        sc.pipeline().addLast(new DelimiterBasedFrameDecoder(2048, Unpooled.copiedBuffer(DELIMITER.getBytes())));
+//                        sc.pipeline().addLast(new DelimiterBasedFrameDecoder(2048, Unpooled.copiedBuffer(DELIMITER.getBytes())));
 //                        sc.pipeline().addLast(new LineBasedFrameDecoder(1024));
+                        sc.pipeline().addLast(new FixedLengthFrameDecoder(2048));
                         sc.pipeline().addLast(new ServiceHandler());
                     }
                 });

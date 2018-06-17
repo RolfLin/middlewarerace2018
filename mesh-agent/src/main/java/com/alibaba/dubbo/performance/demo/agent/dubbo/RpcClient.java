@@ -66,7 +66,7 @@ public class RpcClient {
         }
 
         logger.info("return RpcClient result : {}", result);
-        logger.info("return resultClass : {}", result.getClass());
+//        logger.info("return resultClass : {}", result.getClass());
         return result;
 
     }
