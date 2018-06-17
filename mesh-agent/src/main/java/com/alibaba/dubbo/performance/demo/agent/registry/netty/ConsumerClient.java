@@ -12,9 +12,11 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ConsumerClient  {
@@ -40,9 +42,11 @@ public class ConsumerClient  {
                     .option(ChannelOption.SO_KEEPALIVE, false)
                     .option(ChannelOption.TCP_NODELAY, true)
                     .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
+                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,1000)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
+                            ch.pipeline().addLast("idleStateHandler",new IdleStateHandler(2000,2000,2000, TimeUnit.MILLISECONDS));
                             ch.pipeline().addLast(new ClientHandler());
                         }
                     });
