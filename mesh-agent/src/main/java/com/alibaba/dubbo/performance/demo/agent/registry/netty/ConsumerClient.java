@@ -46,7 +46,10 @@ public class ConsumerClient  {
                     .option(ChannelOption.SO_KEEPALIVE, true)
                     .option(ChannelOption.TCP_NODELAY, true)
 //                    .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
-                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,3000)
+
+//                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,3000)
+
+
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
@@ -69,7 +72,7 @@ public class ConsumerClient  {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            group.shutdownGracefully().sync();
+            group.shutdownGracefully();
         }
         logger.info("consumer result : {}", result);
 //        return result;

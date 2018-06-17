@@ -33,7 +33,9 @@ public class ProviderService {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workGroup)
                 .channel(NioServerSocketChannel.class)
-                .option(ChannelOption.SO_BACKLOG, 1024)
+
+//                .option(ChannelOption.SO_BACKLOG, 1024)
+
                 .option(ChannelOption.SO_REUSEADDR,true)
 //                .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
@@ -57,7 +59,7 @@ public class ProviderService {
 
         chf.channel().closeFuture().sync();
 
-        bossGroup.shutdownGracefully().sync();
-        workGroup.shutdownGracefully().sync();
+        bossGroup.shutdownGracefully();
+        workGroup.shutdownGracefully();
     }
 }

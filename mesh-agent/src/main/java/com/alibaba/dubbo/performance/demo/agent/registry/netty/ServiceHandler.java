@@ -26,7 +26,8 @@ public class ServiceHandler extends ChannelInboundHandlerAdapter {
         buf.readBytes(req);
         String body = new String(req, "utf-8");
         logger.info("get client message : {}", body);
-        logger.info("client message length : {}", body.length());
+        logger.info("client message length : ", req.length);
+//        logger.info("client message length : {}", body.length());
 
         String[] strs = body.split(",");
 //        logger.info("split client message : {}", strs.toString());

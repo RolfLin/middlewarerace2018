@@ -29,6 +29,7 @@ public class HelloController {
     private List<Endpoint> endpoints = null;
     private Object lock = new Object();
     private OkHttpClient httpClient = new OkHttpClient();
+    private static int pointNum = 0;
 
     @RequestMapping(value = "")
     public Object invoke(@RequestParam("interface") String interfaceName,
@@ -63,12 +64,38 @@ public class HelloController {
 
         // 简单的负载均衡，随机取一个
 //        Endpoint endpoint = getEndPoint(endpoints);
-        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
-        logger.info("provider agent port : {}", endpoint.getPort());
-        //netty
+//        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
+//        logger.info("provider agent port : {}", endpoint.getPort());
+//        //netty
+//        String s = (String) new ConsumerClient(endpoint.getHost(), endpoint.getPort()).start(interfaceName, method, parameterTypesString, parameter);
+//        logger.info("return result : {} ", s);
+//        return Integer.valueOf(s);
+
+        Endpoint endpoint;
+
+        if(pointNum == 0){
+            endpoint = endpoints.get(0);
+        }
+        else if(pointNum >= 1 && pointNum <= 2){
+            endpoint = endpoints.get(1);
+        }
+        else{
+            endpoint = endpoints.get(2);
+        }
+
+        if(pointNum >= 5){
+            pointNum = 0;
+        }
+        else{
+            pointNum++;
+        }
+        logger.info("provider agent point : {}, host : {}", pointNum, endpoint.getHost());
+        //        //netty
         String s = (String) new ConsumerClient(endpoint.getHost(), endpoint.getPort()).start(interfaceName, method, parameterTypesString, parameter);
-        logger.info("return result : {} ", s);
+        logger.info("return final result : {} ", s);
         return Integer.valueOf(s);
+
+
 
 //        Object result = nettyClient.invokgie(interfaceName,method,parameterTypesString,parameter,endpoint.getHost(), endpoint.getPort());
 //        logger.info(result.toString());
