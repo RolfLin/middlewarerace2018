@@ -38,7 +38,7 @@ public class ProviderService {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel sc) throws Exception {
-                        sc.pipeline().addLast("idleStateHandler",new IdleStateHandler(500,500,500, TimeUnit.MILLISECONDS));
+//                        sc.pipeline().addLast("idleStateHandler",new IdleStateHandler(500,500,500, TimeUnit.MILLISECONDS));
                         sc.pipeline().addLast(new ServiceHandler());
                     }
                 });
