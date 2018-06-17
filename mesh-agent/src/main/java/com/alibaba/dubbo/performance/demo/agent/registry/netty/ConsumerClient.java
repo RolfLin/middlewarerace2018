@@ -46,7 +46,7 @@ public class ConsumerClient  {
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast("idleStateHandler",new IdleStateHandler(10,10,10, TimeUnit.MILLISECONDS));
+                            ch.pipeline().addLast("idleStateHandler",new IdleStateHandler(500,500,500, TimeUnit.MILLISECONDS));
                             ch.pipeline().addLast(new ClientHandler());
                         }
                     });
