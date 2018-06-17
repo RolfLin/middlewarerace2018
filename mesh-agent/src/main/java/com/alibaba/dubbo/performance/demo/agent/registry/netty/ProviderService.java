@@ -23,7 +23,7 @@ public class ProviderService {
 //    private static EventLoopGroup workGroup = new NioEventLoopGroup();
 
     public static void start() throws InterruptedException {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(2);
+        EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workGroup = new NioEventLoopGroup(4);
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workGroup)
@@ -34,7 +34,8 @@ public class ProviderService {
                 .childOption(ChannelOption.TCP_NODELAY, true)
                 .localAddress(new InetSocketAddress(port))
 //                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,3000)
-                .childOption(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
+//                .childOption(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
+                .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel sc) throws Exception {
@@ -47,7 +48,7 @@ public class ProviderService {
 
         chf.channel().closeFuture().sync();
 
-        bossGroup.shutdownGracefully().sync();
-        workGroup.shutdownGracefully().sync();
+        bossGroup.shutdownGracefully();
+        workGroup.shutdownGracefully();
     }
 }
