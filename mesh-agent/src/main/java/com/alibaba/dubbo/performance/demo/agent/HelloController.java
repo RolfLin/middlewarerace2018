@@ -73,10 +73,10 @@ public class HelloController {
 
         Endpoint endpoint;
 
-        if(pointNum == 0){
-            endpoint = endpoints.get(0);
-        }
-        else if(pointNum >= 1 && pointNum <= 2){
+//        if(pointNum == 0){
+//            endpoint = endpoints.get(0);
+//        }
+        if(pointNum >= 0 && pointNum <= 2){
             endpoint = endpoints.get(1);
         }
         else{

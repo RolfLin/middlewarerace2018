@@ -61,6 +61,7 @@ public class RpcClient {
         Object result = null;
         try {
             result = future.get();
+            chf.channel().closeFuture().sync();
         }catch (Exception e){
             e.printStackTrace();
         }
