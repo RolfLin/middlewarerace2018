@@ -28,8 +28,8 @@ public class ProviderService {
 //    private static EventLoopGroup workGroup = new NioEventLoopGroup();
 
     public static void start() throws InterruptedException {
-        EventLoopGroup bossGroup = new NioEventLoopGroup();
-        EventLoopGroup workGroup = new NioEventLoopGroup(4);
+        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+        EventLoopGroup workGroup = new NioEventLoopGroup(5);
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workGroup)
                 .channel(NioServerSocketChannel.class)

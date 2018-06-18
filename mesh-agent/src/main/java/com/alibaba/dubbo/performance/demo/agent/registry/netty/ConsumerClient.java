@@ -53,6 +53,8 @@ public class ConsumerClient  {
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
+                            ch.pipeline().addLast("idleStateHandler",new IdleStateHandler(1,1,1, TimeUnit.SECONDS));
+
 //                            ch.pipeline().addLast("idleStateHandler",new IdleStateHandler(500,500,500, TimeUnit.MILLISECONDS));
 //                            ch.pipeline().addLast(new DelimiterBasedFrameDecoder(1024, Unpooled.copiedBuffer(delimiter.getBytes())));
                             ch.pipeline().addLast(new ClientHandler());
@@ -66,9 +68,8 @@ public class ConsumerClient  {
             ClientRequestHolder.put(String.valueOf(requestId),future);
             chf.channel().writeAndFlush(Unpooled.copiedBuffer(msg.getBytes()));
 
-//            chf.channel().closeFuture().sync();
             result = future.get();
-
+            chf.channel().closeFuture().sync();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
