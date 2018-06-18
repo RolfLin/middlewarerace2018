@@ -46,6 +46,7 @@ public class ProviderService {
                     @Override
                     protected void initChannel(SocketChannel sc) throws Exception {
 //                        sc.pipeline().addLast("idleStateHandler",new IdleStateHandler(500,500,500, TimeUnit.MILLISECONDS));
+                        sc.pipeline().addLast("idleStateHandler",new IdleStateHandler(500,500,500, TimeUnit.MILLISECONDS));
                         sc.pipeline().addLast(new DelimiterBasedFrameDecoder(2048, Unpooled.copiedBuffer(DELIMITER.getBytes())));
 //                        sc.pipeline().addLast(new LineBasedFrameDecoder(1024));
 //                        sc.pipeline().addLast(new FixedLengthFrameDecoder(1<<5));
