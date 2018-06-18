@@ -43,10 +43,10 @@ public class ConsumerClient  {
             b.group(group)
                     .channel(NioSocketChannel.class)
                     .remoteAddress(host, port)
-                    .option(ChannelOption.SO_KEEPALIVE, true)
-                    .option(ChannelOption.TCP_NODELAY, true)
-//                    .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
+//                    .option(ChannelOption.SO_KEEPALIVE, true)
+//                    .option(ChannelOption.TCP_NODELAY, true)
 
+//                    .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
 //                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,3000)
 
 

@@ -36,14 +36,12 @@ public class ProviderService {
 
 //                .option(ChannelOption.SO_BACKLOG, 1024)
 
-                .option(ChannelOption.SO_REUSEADDR,true)
-//                .option(ChannelOption.SO_BACKLOG, 128)
-                .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .childOption(ChannelOption.TCP_NODELAY, true)
+//                .option(ChannelOption.SO_REUSEADDR,true)
+//                .childOption(ChannelOption.SO_KEEPALIVE, true)
+//                .childOption(ChannelOption.TCP_NODELAY, true)
+//                .childOption(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                 .localAddress(new InetSocketAddress(port))
 //                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,3000)
-//                .childOption(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
-                .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel sc) throws Exception {
