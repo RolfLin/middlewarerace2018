@@ -19,13 +19,13 @@ public class EndpointUtil {
 	public EndpointUtil() {
 		LOGGER.info("开始执行registry的初始化");
 		String etcdUrl = System.getProperty("etcd.url");
-		if (etcdUrl != null) {
+//		if (etcdUrl != null) {
 			registry = new EtcdRegistry(etcdUrl);
 			LOGGER.info("传参进来的etcd地址：{}", etcdUrl);
-		} else {
-			registry = new MyEtcdRegistry();
-			LOGGER.info("采用模拟ETCD");
-		}
+//		} else {
+//			registry = new MyEtcdRegistry();
+//			LOGGER.info("采用模拟ETCD");
+//		}
 	}
 
 	public Endpoint pickOneEndpoint() {
