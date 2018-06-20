@@ -8,7 +8,7 @@ RUN set -ex && mvn clean package
 
 
 # Runner container
-FROM registry.cn-hangzhou.aliyuncs.com/xiaobai050/dstat-base
+FROM registry.cn-hangzhou.aliyuncs.com/aliware2018/debian-jdk8
 
 COPY --from=builder /root/workspace/services/mesh-provider/target/mesh-provider-1.0-SNAPSHOT.jar /root/dists/mesh-provider.jar
 COPY --from=builder /root/workspace/services/mesh-consumer/target/mesh-consumer-1.0-SNAPSHOT.jar /root/dists/mesh-consumer.jar
